@@ -38,7 +38,7 @@ class Menu_items(models.Model):
         else:
             return f'{self.category} : {self.item}  ({self.size})  {self.get_toppings_display()}'
 
-# # sub_addons
+# sub_addons
 class Sub_addons(models.Model):
     SIZE_CHOICES = (
      ('SM', 'small'),
@@ -54,9 +54,89 @@ class Sub_addons(models.Model):
     def __str__(self):
         return f'{self.add_on} ({self.size})'
 
+# order
+class Order(models.Model):
+
+    #let order number be auto generated
+    order_date = models.DateTimeField(auto_now=True)
+    order_lines = () #ordered list of order order_lines
+    price = () #tuple with total price and a description of the subtotal
+
+    # calculate the total price of the order
+    def_calc_order_price(self):
+
+# order line
+class Order_line(models.Model):
+
+    # toppings is an ordered list of items from toppings table
+    # sub_addons is an order list of items from sub_addons table
+    def __init__(self, menu_item, size, toppings, sub_addons):
+        self.menu_item = menu_item
+        self.size = size
+
+        # ensure that toppings is a list
+        if type(topping) is not tuple
+            self.toppings = (toppings)
+        else
+            self.toppings = toppings
+
+        # ensure that sub_addons is a list
+        if type(sub_addons) is not tuple
+            self.sub_addons = (sub_addons)
+        else
+            self.sub_addons = sub_addons
+
+        order.order_lines.append(self)
+
+    def add_topping(self, topping):
+        self.toppings.append(topping)
+
+    def remove_topping(self, topping):
+        self.toppings.remove(topping)
+
+    def add_sub_addon(self, sub_addon):
+        self.sub_addons.append(sub_addon)
+
+    def remove_sub_addon(self, sub_addon):
+        self.sub_addons.remove(sub_addon)
+
+    def change_size(self, size):
+        self.size = size
+
+    def __str__(self):
+        op_string = self.menu_item
+        if size in not '':
+            op_string += f' ({self.size})'
+        if toppings
+        # this will be what is printed on the receipt / order summary
+        # examples:
+        # Line 1: Regular Pizza (LG) 1 Topping:
+        #           Cheese                                  $$$$$
+        # Line 2: Sub: Steak + Cheese (LG):
+        #            Mushrooms +$0.00
+        #            Peppers +$0.00                         $$$$$
+        # Line 3: Pasta: Baked Ziti w/Meatballs             $$$$$
+
+    # calculate the total price of the line
+    def calc_line_price(self):
+        # this needs to be dynamoc in case new categories are added
+        # find base price
+        # if addons exist, add the price of addons
+        # return a tuple with the price and a long description of the details
 
 
 
+    # notes from class
+    from django.http import JSONResponse
+    response = JsonResponse(someDictinoary)  # use safe=False to return list
+
+    def add_item(self):
+
+
+
+
+# Customer
+class Customer(models.Model):
 
 
 
