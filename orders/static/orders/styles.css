@@ -1,0 +1,19 @@
+header, footer {
+  padding: 15px 15px 50px 15px;
+  color: lightgrey;
+  background-color: #368ef2;
+}
+
+footer {
+  height: 6vh;
+}
+
+header {
+  font-size: 1.5em;
+  height: 3vh;
+}
+
+body {
+  margin-top: 8vh;
+  margin-bottom: 7vh;
+}

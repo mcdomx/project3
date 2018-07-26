@@ -16,7 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from django.conf.urls import url
+from django.contrib.auth import views as auth_views
+# from pinocchios.orders import views as orders_views
+
 urlpatterns = [
     path("", include("orders.urls")),
+    # path("register", include("orders.urls")),
     path("admin/", admin.site.urls),
+    url(r'^login/$', auth_views.login, {'template_name': 'orders/login.html'}, name='login'),
+    url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
+    # url(r'^register/$', orders_views.register, name='register'),
 ]

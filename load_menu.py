@@ -45,6 +45,13 @@ def main():
         delete_table_data("orders_sub_addons", db)
         load_table("sub_addons.csv", "orders_sub_addons", db, 6)
 
+    # pizza_toppings table
+    print("ERASE & RELOAD 'pizza_toppings' table? (Y/N): ", end="")
+    response=get_Y_or_N()
+    if response is 'Y':
+        delete_table_data("orders_pizza_toppings", db)
+        load_table("pizza_toppings.csv", "orders_pizza_toppings", db, 3)
+
 
 def delete_table_data(table, db):
     sql = f"DELETE FROM {table}"
