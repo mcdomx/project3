@@ -3,12 +3,19 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
+from .models import Menu_items
+from django.http import JsonResponse
 
 # Create your views here.
 def index(request):
     # return HttpResponse("Project 3: TODO")
     # return HttpResponseRedirect(reverse("index"))
-    context = {}
+
+    menu_items = Menu_items.objects.values('item').distinct()
+
+    context = {
+        'menu_items': menu_items,
+    }
     return render(request, "orders/index.html", context)
 
 
@@ -33,3 +40,18 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'orders/register.html', {'form': form})
+
+
+def get_menu_items(request):
+    # for i in request:
+    #     print(i)
+    sel_item = request.POST.get("sel_item")
+    print(f"AJAX request received with item: {sel_item}")
+    response = Menu_items.objects.filter(item=sel_item)
+    return response
+
+
+
+# notes from class
+# from django.http import JsonResponse
+# response = JsonResponse(someDictinoary)  # use safe=False to return list

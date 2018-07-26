@@ -1,11 +1,6 @@
 from django.db import models
 
 
-# notes from class
-# from django.http import JSONResponse
-# response = JsonResponse(someDictinoary)  # use safe=False to return list
-
-
 # menu_categories
 class Menu_categories(models.Model):
     category = models.CharField(primary_key = True, max_length = 64)
