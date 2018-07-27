@@ -20,7 +20,8 @@ function setup_order_modal () {
         const get_menu_items = new XMLHttpRequest();
 
         var i = document.getElementById("menu_item_selection");
-        const sel_item = i.options[i.selectedIndex].value;
+        // use text instead of value to get text including spaces 
+        const sel_item = i.options[i.selectedIndex].text;
 
         get_menu_items.open('POST', '/get_menu_items');
         get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
@@ -31,7 +32,6 @@ function setup_order_modal () {
           //extract JSON data from request
           // const response = JSON.parse(get_menu_items.responseText)
           const response = get_menu_items.responseText
-
 
           //if pizza - display size options and toppings options
           //if sub - display size options, extra cheese check box and

@@ -47,7 +47,8 @@ def get_menu_items(request):
     #     print(i)
     sel_item = request.POST.get("sel_item")
     print(f"AJAX request received with item: {sel_item}")
-    response = Menu_items.objects.filter(item=sel_item)
+    response = JsonResponse(Menu_items.objects.all().filter(item=sel_item), safe=False)
+    print("Got list of menu items meeting criteria")
     return response
 
 

@@ -29,6 +29,7 @@
               <p>Place your order.  Click Add to place item in cart.</p>
               <select id="menu_item_selection" class="form-group">
                 <!-- TODO: consider adding option groups for categories <optgroup label = "Pizza"> -->
+                    <option disabled selected value> -- select an item -- </option>
                   {% for item in menu_items %}
                     <option value={{item.item}}>{{item.item}}</option>
                   {% endfor %}
