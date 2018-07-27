@@ -45,14 +45,21 @@ class Menu_items(models.Model):
     def get_price(self):
         return self.price
 
+    def as_dict(self):
+        rv = vars(self)
+        del rv['_state']
+        return rv
+        # for variable in vars(self):
+        #     rv[variable] = variable
 
+    def get_varval(self, variable):
+        return self.variable
 
-
-    def __str__(self):
-        if self.size == '':
-            return f'{self.category} : {self.item}  {self.get_toppings_display()}'
-        else:
-            return f'{self.category} : {self.item}  ({self.size})  {self.get_toppings_display()}'
+    # def __str__(self):
+    #     if self.size == '':
+    #         return f'{self.category} : {self.item}  {self.get_toppings_display()}'
+    #     else:
+    #         return f'{self.category} : {self.item}  ({self.size})  {self.get_toppings_display()}'
 
 # sub_addons
 class Sub_addons(models.Model):
@@ -78,11 +85,22 @@ class Pizza_toppings(models.Model):
     topping = models.CharField(max_length = 64, blank = False)
     available = models.BooleanField(default = True)
 
-    def is_available(topping):
-        return Pizza_toppings.objects(topping=topping).available
+    # def is_available(topping):
+    #     return Pizza_toppings.objects(topping=topping).available
 
     def __str__(self):
         return f'{self.topping}'
+
+    def as_list():
+        rv = []
+        full_list = Pizza_toppings.objects.all()
+        for t in full_list:
+            if t.available is True:
+                rv.append(t.topping)
+        return rv
+        # for variable in vars(self):
+        #     rv[variable] = variable
+
 
 
 # order line

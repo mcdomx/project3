@@ -3,8 +3,10 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
-from .models import Menu_items
+from .models import Menu_items, Pizza_toppings
 from django.http import JsonResponse
+
+import json
 
 # Create your views here.
 def index(request):
@@ -43,13 +45,23 @@ def register(request):
 
 
 def get_menu_items(request):
-    # for i in request:
-    #     print(i)
-    sel_item = request.POST.get("sel_item")
-    print(f"AJAX request received with item: {sel_item}")
-    response = JsonResponse(Menu_items.objects.all().filter(item=sel_item), safe=False)
-    print("Got list of menu items meeting criteria")
-    return response
+
+    sel_item= request.POST.get("sel_item")
+
+    menu_items = Menu_items.objects.filter(item=sel_item)
+    response = []
+    # make each item in the query result a dictionary object and add to response
+    for obj in menu_items:
+        response.append(obj.as_dict())
+    return JsonResponse(response, safe=False)
+
+def get_toppings(request):
+    p_toppings = Pizza_toppings.objects.filter(available=True)
+    # response = Pizza_toppings.as_dict()
+    response = Pizza_toppings.as_list()
+
+    return JsonResponse(response, safe=False)
+
 
 
 

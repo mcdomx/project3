@@ -20,7 +20,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+              <h5 class="modal-title" id="exampleModalLongTitle">Add to cart ...</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -40,6 +40,20 @@
                 <input type="radio" name="size" value="SM"> Small
                 <input type="radio" name="size" value="LG"> Large
               </div>
+
+              <div hidden id="toppings_group">
+                <div id="toppings_selection"></div>
+                <div class="btn-group">
+                  <a class="btn btn-success dropdown-toggle" data-toggle="dropdown" href="#">
+                    Select topping to add...
+                    <span class="caret"></span>
+                  </a>
+                  <ul id="toppings_list" class="dropdown-menu">
+                    <!-- dropdown menu links -->
+                  </ul>
+                </div> <!-- END BUTTON GROUP -->
+                <div id="selected_toppings"></div>
+              </div> <!-- END TOPPINGS GROUP -->
 
             </div>
 
