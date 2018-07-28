@@ -49,8 +49,7 @@ class Menu_items(models.Model):
         rv = vars(self)
         del rv['_state']
         return rv
-        # for variable in vars(self):
-        #     rv[variable] = variable
+
 
     def get_varval(self, variable):
         return self.variable
@@ -77,8 +76,13 @@ class Sub_addons(models.Model):
     def get_price(add_on):
         return Sub_addons.objects(add_on=add_on).price
 
-    def __str__(self):
-        return f'{self.add_on} ({self.size})'
+    def as_dict(self):
+        rv = vars(self)
+        del rv['_state']
+        return rv
+
+    # def __str__(self):
+    #     return f'{self.add_on} ({self.size})'
 
 # toppings
 class Pizza_toppings(models.Model):

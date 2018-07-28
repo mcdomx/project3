@@ -1,6 +1,7 @@
 
 toppings_list_populated = false;
 
+
 // ########################  begin DOMContentLoaded ########################
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -20,8 +21,6 @@ function setup_order_modal () {
 
   document.querySelector('#menu_item_selection').onchange = () => {
 
-
-
         //initialize new request
         const get_menu_items = new XMLHttpRequest();
         const sel_item = get_selected_menu_item();
@@ -33,24 +32,7 @@ function setup_order_modal () {
         get_menu_items.onload = () => {
           //extract JSON data from request
           const response = JSON.parse(get_menu_items.responseText)
-          // response is a list of dictionary items each of which
-          // represents a possible menu choice based on initial selection
-
-          //if item has a size option, display selection
-          // unhide id="size_selection"
           display_modal_options(response);
-
-          // if (response[0].size != '') {
-          //   document.querySelector('#size_selection').hidden = false;
-          // }
-          //
-          // if (response[0].category_id == 'Pizza' && !toppings_list_populated) {
-          //   // load pizza toppings into drop down menu
-          //   load_pizza_toppings()
-          // }
-
-          //if sub - display size options, extra cheese check box and
-          //   if steak + cheese, the additional options check boxes
         } //end onload
 
         // Add data to send with request
@@ -63,12 +45,9 @@ function setup_order_modal () {
 
   } // onchange for menu_item_selection
 
-
-
   document.getElementById('cancel_modal').onclick = () => {
     clear_modal();
   }
-
 
 } // end setup_order_modal()
 
@@ -77,22 +56,100 @@ function display_modal_options (items) {
   // start by hidding all items
   document.querySelector('#size_selection').hidden = true;
   document.querySelector('#toppings_group').hidden = true;
+  document.querySelector('#sub_options').hidden = true;
 
+  // If item has size option, show size
   if (items[0].size != '') {
     document.querySelector('#size_selection').hidden = false;
-  } else {
-    clear_size()
+  } else {  //otherwise, clear the size selection and hide it
+    clear_size();
   }
 
+  // if item is a Pizza, show the toppings selection
   if (items[0].category_id == 'Pizza' ) {
-
     if (!toppings_list_populated) { load_pizza_toppings() }
-
     document.querySelector('#toppings_group').hidden = false;
-  } else {
-    clear_toppings()
+  } else { // otherwise, clear the toppings and hide them
+    clear_toppings();
   }
-}
+
+  // if item is a Sub, show extra cheese option
+  if (items[0].category_id == 'Sub' ) {
+    clear_sub_options();
+    load_sub_options();
+    document.querySelector('#sub_options').hidden = false;
+  } else { // otherwise, clear the toppings and hide them
+    clear_sub_options();
+  }
+
+  // if the items count is 1, update the line summary with price
+  if (len(items) == 1):
+    update_line_summary();
+
+} // end display_modal_options()
+
+
+// get the selected size.  return false if neither is selected
+function get_selected_size() {
+  size_radios = document.getElementsByClassName("selected_size")
+  num_radios = size_radios.length;
+  for (var i=0; i<num_radios; i++) {
+    if (size_radios[i].checked) {
+      return size_radios[i].value
+    }
+  }
+  return false
+} // end get_selected_size()
+
+
+function load_sub_options() {
+  //initialize new request
+  const get_sub_options = new XMLHttpRequest();
+  const sel_item = get_selected_menu_item();
+  const sel_size = get_selected_size();
+
+  get_sub_options.open('POST', '/get_sub_options');
+  get_sub_options.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+
+  //when request is completed
+  get_sub_options.onload = () => {
+
+    //extract JSON data from request
+    const response = JSON.parse(get_sub_options.responseText);
+
+    // loop through reponse items and add them to the dropdown
+    for (i in response){
+      const check_box = document.createElement('input');
+      check_box.type = "checkbox"
+      check_box.name = response[i].add_on;
+      check_box.value = response[i].add_on;
+
+      const cb_text = document.createElement('span');
+      cb_text.innerHTML = `${response[i].add_on} (\$${response[i].price})`;
+
+      const br = document.createElement('br');
+
+      sub_options = document.getElementById("sub_options");
+      sub_options.appendChild(check_box);
+      sub_options.appendChild( document.createTextNode( '\u00A0' ) );
+      sub_options.appendChild(cb_text);
+      sub_options.appendChild(br);
+
+    }; // end for i in response loop
+
+    } // end onload
+
+    data = new FormData();
+    data.append('sel_item', sel_item);
+    data.append('sel_size', sel_size);
+
+    // Send request
+    get_sub_options.send(data);
+    return false; // avoid sending the form and creating an HTTP POST request
+
+} // end load_sub_options
+
+
 
 function load_pizza_toppings() {
   //initialize new request
@@ -125,7 +182,7 @@ function load_pizza_toppings() {
           // append a remove topping button (- pill)
           const remove_but = document.createElement('span');
           remove_but.className = "badge badge-pill badge-danger ml-2";
-          remove_but.innerHTML = "-";
+          remove_but.innerHTML = "&times;";
           remove_but.onclick = () => {
             // code to remove item from the list
             this_item = document.getElementById(topping);
@@ -172,33 +229,42 @@ function count_slected_pizza_toppings() {
   return elements.length;
 }
 
-// get the selected size.  return false if neither is selected
-function get_selected_size() {
-  size_radios = document.getElementsByClassName("selected_size")
-  num_radios = size_radios.length;
-  for (var i=0; i<num_radios; i++) {
-    if (size_radios[i].checked) {
-      return size_radios[i].value
-    }
-  }
-  return false
-} // end get_size()
+
 
 
 } // end get_selected_pizza_toppings
 
 // update the menu item selection and price
-function update_item_display() {
+function update_line_summary() {
 
-  // toppings_list = document.getElementById("toppings_list");
   sel_item = get_selected_menu_item();
-  sel_size = get_selected_size()
+  sel_cat = get_selected_category();
+  sel_size = get_selected_size();
   toppings_count = count_selected_pizza_toppings();
+  sub_options = count_sub_options();
 
-  //TODO:  this is where I left offset
-  //query menu to get the price
-  //return a description to dom element
+  if (sel_cat == "Pizza") {
+    // Regular Pizza (LG)
+    // x toppings:            $0000  (if 0 items 'Cheese Only'  >4: 'Special')
+    // Item Total:            $0000
 
+
+  } else if (sel_cat == "Sub") {
+  // Ham + Cheese Sub (LG)   $0000
+  // x Add ons:              $0000
+  // Item total:             $0000
+
+
+  } else {
+
+
+  // the remaining items are all almost the same
+  // Pasta item               $0000
+  // Salad item               $0000
+  // Dinner Platter item (LG) $0000
+  }
+
+  //TODO:  this is what I am working on
 
 } // update_item_display()
 
@@ -209,6 +275,9 @@ function clear_modal () {
   document.getElementById('size_selection').hidden = true;
   clear_toppings();
   document.getElementById('toppings_group').hidden = true;
+  clear_sub_options()
+  document.getElementById("sub_options").hidden = true;
+
 } //end clear_modal()
 
 // clear selected menu item
@@ -233,10 +302,10 @@ function clear_toppings() {
   }
 } // end clear_toppings()
 
-
-
-
-// will get menu item based on arguments passed
-function query_menu_item(kwargs) {
-
-}
+// clear sub_options from the DOM
+function clear_sub_options() {
+  var sub_options = document.getElementById("sub_options")
+  while (sub_options.firstChild) {
+    sub_options.removeChild(sub_options.firstChild);
+  }
+} // end clear_toppings()

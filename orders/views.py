@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
-from .models import Menu_items, Pizza_toppings
+from .models import Menu_items, Pizza_toppings, Sub_addons
 from django.http import JsonResponse
 
 import json
@@ -57,10 +57,30 @@ def get_menu_items(request):
 
 def get_toppings(request):
     p_toppings = Pizza_toppings.objects.filter(available=True)
-    # response = Pizza_toppings.as_dict()
     response = Pizza_toppings.as_list()
 
     return JsonResponse(response, safe=False)
+
+def get_sub_options(request):
+    response = []
+    sel_item= request.POST.get("sel_item")
+    sel_size= request.POST.get("sel_size")
+    s_options = Sub_addons.objects.filter(available=True, restricted_menu_item='', size=sel_size)
+
+    # create a list of dictionary items for response
+    for obj in s_options:
+        response.append(obj.as_dict())
+
+    # find any sub options that are restricted to the item selected
+    # append them to the response
+    s_options_restricted = Sub_addons.objects.filter(available=True, restricted_menu_item=sel_item, size=sel_size)
+    if (s_options_restricted):
+        for obj in s_options_restricted:
+            response.append(obj.as_dict())
+    
+
+    return JsonResponse(response, safe=False)
+
 
 
 

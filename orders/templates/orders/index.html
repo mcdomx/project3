@@ -11,22 +11,25 @@
       <p>Welcome {{ user.first_name }} !!!</p>
 
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#order_item_modal">
         Order
       </button>
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#view_cart_modal">
+        View Cart
+      </button>
 
-      <!-- Modal -->
-      <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <!-- Add Item Modal -->
+      <div class="modal fade" id="order_item_modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLongTitle">Add to cart ...</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <h5 class="modal-title">Add to cart ...</h5>
+              <button type="button" class="close" data-dismiss="modal">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              <p>Place your order.  Click Add to place item in cart.</p>
+              <p>Click 'Add to Cart' to place item in cart</p>
               <select id="menu_item_selection" class="form-group">
                 <!-- TODO: consider adding option groups for categories <optgroup label = "Pizza"> -->
                     <option disabled selected value> -- select an item -- </option>
@@ -38,10 +41,10 @@
 
               <div hidden id="size_selection" class="form-group">
                 <input type="radio" class="selected_size" name="size" value="SM"> Small
-                <input type="radio" class="selected_size" name="size" value="LG"> Large
+                <input type="radio" class="selected_size" name="size" value="LG" checked="checked"> Large
               </div>
 
-              <div id="item_display"></div> <!-- display item and price -->
+
 
               <div hidden id="toppings_group">
                 <div class="btn-group">
@@ -56,15 +59,59 @@
                 <div id="selected_toppings"></div>
               </div> <!-- END TOPPINGS GROUP -->
 
+              <!-- SUB OPTIONS -->
+              <div hidden id="sub_options"></div>
+
+              <!-- ITEM TOTAL -->
+              <hr>
+              <div id="item_display">This is where item and price go</div> <!-- display item and price -->
+
             </div>
 
             <div class="modal-footer">
+
               <button id="cancel_modal" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button id="add_to_cart_modal" type="button" class="btn btn-primary">Add to Cart</button>
+              <button id="add_to_cart_modal" type="button" class="btn btn-primary" data-dismiss="modal">Add to Cart</button>
+            </div> <!-- END FOOTER -->
+          </div> <!-- END CONTENT -->
+        </div> <!-- END DIALOG -->
+      </div> <!-- END ADD ITEM MODAL -->
+
+      <!-- View Cart Modal -->
+      <div class="modal fade" id="view_cart_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Shopping Cart</h5>
+              <button type="button" class="close" data-dismiss="modal">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-          </div>
-        </div>
-      </div>
+            <div class="modal-body">
+              <p>Click 'Place Order' to get your food!</p>
+
+              <div hidden id="delivery_selection" class="form-group">
+                <input type="radio" class="delivery_option" name="delivery_option" value="Pick_up"> Pick-up
+                <input type="radio" class="delivery_option" name="delivery_option" value="Deliver"> Deliver
+              </div>
+
+              <div hidden id="order_lines">
+                  .... order lines go here
+              </div> <!-- END order lines  -->
+
+            </div> <!-- END modal body  -->
+
+            <div class="modal-footer">
+              <button id="btn_close_cart" type="button" class="btn btn-secondary" data-dismiss="modal">Close Cart</button>
+              <button id="btn_delete_cart" type="button" class="btn btn-secondary" data-dismiss="modal">Delete Cart</button>
+              <button id="btn_place_order" type="button" class="btn btn-primary" data-dismiss="modal">Place Order</button>
+            </div> <!-- END FOOTER -->
+          </div> <!-- END CONTENT -->
+        </div> <!-- END DIALOG -->
+      </div> <!-- END VIEW CART MODAL -->
+
+
+
     {% else %}
       <p>Login to order items.</p>
     {% endif %}
