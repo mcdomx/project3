@@ -34,7 +34,7 @@
                 <!-- TODO: consider adding option groups for categories <optgroup label = "Pizza"> -->
                     <option disabled selected value> -- select an item -- </option>
                   {% for item in menu_items %}
-                    <option value={{item.item}}>{{item.item}}</option>
+                    <option value={{item.category|slugify}}>{{item.category}}: {{item.item}}</option>
                   {% endfor %}
                 <!-- <optgroup> -->
               </select>
@@ -71,7 +71,7 @@
             <div class="modal-footer">
 
               <button id="cancel_modal" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button id="add_to_cart_modal" type="button" class="btn btn-primary" data-dismiss="modal">Add to Cart</button>
+              <button id="btn_add_to_cart" type="button" class="btn btn-primary" data-dismiss="modal">Add to Cart</button>
             </div> <!-- END FOOTER -->
           </div> <!-- END CONTENT -->
         </div> <!-- END DIALOG -->

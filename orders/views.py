@@ -10,10 +10,8 @@ import json
 
 # Create your views here.
 def index(request):
-    # return HttpResponse("Project 3: TODO")
-    # return HttpResponseRedirect(reverse("index"))
 
-    menu_items = Menu_items.objects.values('item').distinct()
+    menu_items = Menu_items.objects.values('category','item').distinct()
 
     context = {
         'menu_items': menu_items,
@@ -44,16 +42,53 @@ def register(request):
     return render(request, 'orders/register.html', {'form': form})
 
 
+
+# get menu items based on data in form
+# many items may be returned or a single item
 def get_menu_items(request):
 
     sel_item= request.POST.get("sel_item")
+    sel_size= request.POST.get("sel_size")
+    sel_toppings= request.POST.get("sel_toppings")
+    sel_subOptions= request.POST.get("sel_subOptions")
 
-    menu_items = Menu_items.objects.filter(item=sel_item)
+
+    # parse sel_item -- split by :
+    split_item = sel_item.split(":")
+    category = split_item[0]
+    item = split_item[1].lstrip()
+
+    sel_toppings = sel_toppings.split(",")
+    print (sel_toppings)
+    if str(category) in "Pizza":
+        if sel_toppings[0] == '':
+            sel_toppings = "CHEESE"
+        elif len(sel_toppings) > 3:
+            sel_toppings = "SPECIAL"
+        else:
+            sel_toppings = len(sel_toppings)
+    else:
+        sel_toppings = ''
+
+    if str(category) in "Pasta" or str(category) in "Salad":
+        sel_size=''
+
+    print(f"from form. category: {category}")
+    print(f"from form. sel_item: {item}")
+    print(f"from form. sel_size: '{sel_size}'")
+    print(f"from form. sel_toppings: {sel_toppings}")
+    print(f"from form. sel_subOptions: {sel_subOptions}")
+    menu_items = Menu_items.objects.filter(category=category, item=item, size=sel_size, toppings=sel_toppings)
+    for m in menu_items:
+        print(m.price)
+
     response = []
     # make each item in the query result a dictionary object and add to response
     for obj in menu_items:
         response.append(obj.as_dict())
+    print (response)
     return JsonResponse(response, safe=False)
+
 
 def get_toppings(request):
     p_toppings = Pizza_toppings.objects.filter(available=True)
@@ -77,7 +112,7 @@ def get_sub_options(request):
     if (s_options_restricted):
         for obj in s_options_restricted:
             response.append(obj.as_dict())
-    
+
 
     return JsonResponse(response, safe=False)
 

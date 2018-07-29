@@ -1,16 +1,53 @@
 
+
+
+
+// #############  CLASSES  #############
+
+class Order_line {
+  constructor (category, menu_item, size, toppings_list, sub_options_list) {
+    this.line_id = (new Date).getTime();
+    this.category = category;
+    this.menu_item = menu_item;
+    this.size = size;
+    this.toppings_list = new Array(toppings_list);
+    this.sub_options_list = new Array(sub_options_list);
+  } //  end constructor
+}
+
+class Cart {
+  constructor (order_lines) {
+    this.order_lines = new Array(order_lines);
+  }
+
+  add (order_line) {
+      this.order_lines.append(order_line);
+  }
+
+  remove(line_id, cart) {
+    for (line in cart.order_lines)
+      if (cart.order_lines[line].line_id == line_id){
+        cart.order_lines.splice(line,1);
+        return;
+      }
+
+  }
+
+}
+
+// #############  END CLASSES  #############
+
+
+// #############  GLOBAL VARIABLES  #############
+
 toppings_list_populated = false;
+cart = new Cart();
+
+// #############  END GLOBAL VARIABLES  #############
 
 
 // ########################  begin DOMContentLoaded ########################
 document.addEventListener('DOMContentLoaded', () => {
-
-  // var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-  // //
-  // socket.on('connect', () => {
-  //   alert("socket established")
-  //
-  // }); // end on connect
 
   setup_order_modal();
 
@@ -19,31 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setup_order_modal () {
 
-  document.querySelector('#menu_item_selection').onchange = () => {
-
-        //initialize new request
-        const get_menu_items = new XMLHttpRequest();
-        const sel_item = get_selected_menu_item();
-
-        get_menu_items.open('POST', '/get_menu_items');
-        get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
-
-        //when request is completed
-        get_menu_items.onload = () => {
-          //extract JSON data from request
-          const response = JSON.parse(get_menu_items.responseText)
-          display_modal_options(response);
-        } //end onload
-
-        // Add data to send with request
-        const data = new FormData();
-
-        data.append('sel_item', sel_item);
-
-        get_menu_items.send(data); // Send request
-        return false; // avoid sending the form
-
-  } // onchange for menu_item_selection
+  document.querySelector('#menu_item_selection').onchange = refresh_modal;
+  document.querySelector('#size_selection').onchange = update_modal;
+  document.getElementById('btn_add_to_cart').onclick = add_to_cart;
 
   document.getElementById('cancel_modal').onclick = () => {
     clear_modal();
@@ -52,8 +67,77 @@ function setup_order_modal () {
 } // end setup_order_modal()
 
 
-function display_modal_options (items) {
-  // start by hidding all items
+function add_to_cart() {
+
+
+  menu_item = get_selected_menu_item()
+  //parse to get cat and item
+  split_menu_item = menu_item.split(':');
+  category = split_menu_item[0];
+  item = split_menu_item[1].trim();
+
+  size = get_selected_size()
+  toppings_list = get_selected_pizza_toppings()
+  sub_options_list = get_selected_subOptions()
+
+  new_line = new Order_line(category, item, size, toppings_list, sub_options_list);
+
+  // if (!localStorage.getItem("cart")) {
+  //   localStorage.setItem("cart", new Cart() );
+  // }
+
+  cart.order_lines.push(new_line);
+
+
+}
+
+function refresh_modal() {
+  draw_modal(initial_modal);
+}
+
+function update_modal() {
+  draw_modal(update_line_summary);
+}
+
+// gets a menu item from the server based on user selections
+// updates the modal with options based on user selection
+// will also update the price
+function draw_modal(modal_function) {
+
+      //initialize new request
+      const get_menu_items = new XMLHttpRequest();
+      const sel_item = get_selected_menu_item();
+      const sel_size = get_selected_size();
+      const sel_toppings = get_selected_pizza_toppings();
+      const sel_subOptions = get_selected_subOptions();
+
+      get_menu_items.open('POST', '/get_menu_items');
+      get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+
+      //when request is completed
+      get_menu_items.onload = () => {
+        //extract JSON data from request
+        const response = JSON.parse(get_menu_items.responseText)
+        modal_function(response);
+      } //end onload
+
+      // Add data to send with request
+      const data = new FormData();
+
+      data.append('sel_item', sel_item);
+      data.append('sel_size', sel_size);
+      data.append('sel_toppings', sel_toppings);
+      data.append('sel_subOptions', sel_subOptions);
+
+      get_menu_items.send(data); // Send request
+      return false; // avoid sending the form
+
+} // end func_get_items()
+
+
+// starts modal from scratch - unless pizza type is the only thing that changed
+function initial_modal(items) {
+
   document.querySelector('#size_selection').hidden = true;
   document.querySelector('#toppings_group').hidden = true;
   document.querySelector('#sub_options').hidden = true;
@@ -62,7 +146,7 @@ function display_modal_options (items) {
   if (items[0].size != '') {
     document.querySelector('#size_selection').hidden = false;
   } else {  //otherwise, clear the size selection and hide it
-    clear_size();
+    // clear_size();
   }
 
   // if item is a Pizza, show the toppings selection
@@ -77,29 +161,28 @@ function display_modal_options (items) {
   if (items[0].category_id == 'Sub' ) {
     clear_sub_options();
     load_sub_options();
+    document.querySelector('#size_selection').hidden = false;
+    // document.querySelector('#toppings_group').hidden = true;
     document.querySelector('#sub_options').hidden = false;
   } else { // otherwise, clear the toppings and hide them
     clear_sub_options();
   }
 
+  if (items[0].category_id == 'Dinner Platter' ) {
+    document.querySelector('#size_selection').hidden = false;
+
+  }
+
+
   // if the items count is 1, update the line summary with price
-  if (len(items) == 1):
-    update_line_summary();
+  if ((items.length) == 1) {
+    update_line_summary(items);
+  }
 
 } // end display_modal_options()
 
 
-// get the selected size.  return false if neither is selected
-function get_selected_size() {
-  size_radios = document.getElementsByClassName("selected_size")
-  num_radios = size_radios.length;
-  for (var i=0; i<num_radios; i++) {
-    if (size_radios[i].checked) {
-      return size_radios[i].value
-    }
-  }
-  return false
-} // end get_selected_size()
+
 
 
 function load_sub_options() {
@@ -121,8 +204,14 @@ function load_sub_options() {
     for (i in response){
       const check_box = document.createElement('input');
       check_box.type = "checkbox"
-      check_box.name = response[i].add_on;
+      check_box.name = "sub_option";
       check_box.value = response[i].add_on;
+
+      var data = document.createAttribute("data-addon_price");
+      data.value = response[i].price;
+      check_box.setAttributeNode(data);
+
+      check_box.onchange = () => {update_modal()};
 
       const cb_text = document.createElement('span');
       cb_text.innerHTML = `${response[i].add_on} (\$${response[i].price})`;
@@ -187,12 +276,17 @@ function load_pizza_toppings() {
             // code to remove item from the list
             this_item = document.getElementById(topping);
             this_item.parentNode.removeChild(this_item);
+            list_item.hidden = false;
+            update_modal();
           } // end remove button on click
           sel_item.appendChild(remove_but);
 
           // add selected item to list
           sel_toppings_list = document.getElementById("selected_toppings");
           sel_toppings_list.appendChild(sel_item);
+          list_item.hidden = true;
+
+          update_modal();
         } // end div_onclick
 
       toppings_list = document.getElementById("toppings_list");
@@ -215,6 +309,18 @@ function get_selected_menu_item () {
     return i.options[i.selectedIndex].text;
 }
 
+// get the selected size.  return false if neither is selected
+function get_selected_size() {
+  size_radios = document.getElementsByClassName("selected_size")
+  num_radios = size_radios.length;
+  for (var i=0; i<num_radios; i++) {
+    if (size_radios[i].checked) {
+      return size_radios[i].value
+    }
+  }
+  return "LG" //default
+} // end get_selected_size()
+
 
 function get_selected_pizza_toppings() {
     elements = document.getElementsByClassName('selected_pizza_toppings');
@@ -223,48 +329,61 @@ function get_selected_pizza_toppings() {
       rv.push(elements[i].id);
     }
     return rv;
-
-function count_slected_pizza_toppings() {
-  elements = document.getElementsByClassName('selected_pizza_toppings');
-  return elements.length;
-}
-
-
-
-
 } // end get_selected_pizza_toppings
 
+
+function count_selected_pizza_toppings() {
+  elements = document.getElementsByClassName('selected_pizza_toppings');
+  return elements.length;
+} // end count_slected_pizza_toppings()
+
+
+function get_selected_subOptions() {
+    elements = document.getElementsByName("sub_option");
+    rv = [];
+    for (i=0; i<elements.length; i++) {
+      if (elements[i].checked == true) {
+        rv.push(elements[i].value);
+      }
+    }
+    return rv;
+} // end get_selected_subOptions()
+
+
 // update the menu item selection and price
-function update_line_summary() {
+// only called when a single menu item was resolved by server
+function update_line_summary(item_list) {
 
-  sel_item = get_selected_menu_item();
-  sel_cat = get_selected_category();
-  sel_size = get_selected_size();
-  toppings_count = count_selected_pizza_toppings();
-  sub_options = count_sub_options();
+  item = item_list[0];
+  s_line = document.getElementById('item_display');
 
-  if (sel_cat == "Pizza") {
-    // Regular Pizza (LG)
-    // x toppings:            $0000  (if 0 items 'Cheese Only'  >4: 'Special')
-    // Item Total:            $0000
+  if (item.category_id == "Pizza") {
+    s_line.innerHTML = `${item.item} (${item.size}) // toppings: ${item.toppings} // Price: ${item.price}`;
 
+  } else if (item.category_id == "Sub") {
 
-  } else if (sel_cat == "Sub") {
-  // Ham + Cheese Sub (LG)   $0000
-  // x Add ons:              $0000
-  // Item total:             $0000
+    total_line_price = Number(item.price);
+    addons_text = '';
 
+    item_text = `${item.category_id}:${item.item} (${item.size})  $${item.price}`;
+
+    addons = document.getElementsByName("sub_option");
+    for (i=0; i<addons.length; i++) {
+      if (addons[i].checked == true) {
+        addons_text += `</br>+ ${addons[i].value} $${addons[i].dataset.addon_price}`;
+        total_line_price += Number(addons[i].dataset.addon_price);
+      }
+    }
+
+    total_text = `</br>Item Total: $${total_line_price.toFixed(2)}`;
+    s_line.innerHTML = item_text + addons_text + total_text;
+
+  } else if (item.category_id == "Dinner Platter") {
+    s_line.innerHTML = `${item.category_id}:${item.item} (${item.size}) // Price: ${item.price}`;
 
   } else {
-
-
-  // the remaining items are all almost the same
-  // Pasta item               $0000
-  // Salad item               $0000
-  // Dinner Platter item (LG) $0000
+    s_line.innerHTML = `${item.category_id}:${item.item} // Price: ${item.price}`;
   }
-
-  //TODO:  this is what I am working on
 
 } // update_item_display()
 
