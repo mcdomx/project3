@@ -123,6 +123,7 @@ class Order_line(models.Model):
     )
 
     item = models.ForeignKey(Menu_items, on_delete = models.CASCADE, blank = True, null = True)
+    # category = models.ForeignKey(Menu_categories, on_delete = models.CASCADE, blank = True, null = True)
     size = models.CharField(max_length = 16, choices = SIZE_CHOICES, blank = True)
     toppings = models.CharField(max_length = 64, choices = TOPPINGS_CHOICES, blank = True)
     topping_items = models.ManyToManyField(Pizza_toppings, blank = True)
@@ -181,17 +182,6 @@ class Order_line(models.Model):
     def __str__(self):
         op_string = f"{self.item} ({self.size}) ${self.price}"
         return op_string
-
-        # this will be what is printed on the receipt / order summary
-        # examples:
-        # Line 1: Regular Pizza (LG) 1 Topping
-        #             +Onions                                $0.00
-
-        # Line 2: Steak + Cheese (LG)             $0.00
-        #            +Mushrooms                  +$0.00
-        #            +Peppers                    +$0.00      $0.00
-
-        # Line 3: Baked Ziti w/Meatballs                     $0.00
 
 
 # order

@@ -112,7 +112,8 @@ def get_sub_options(request):
     return JsonResponse(response, safe=False)
 
 
-
+def place_order(request):
+    order = request.POST.get("cart")
 
 
 # notes from class

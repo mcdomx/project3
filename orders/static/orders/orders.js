@@ -20,12 +20,30 @@ Order_line.prototype.publicMethod = function () {
 }
 
 class Cart {
-  constructor (order_lines) {
-    this.order_lines = new Array(order_lines);
+  constructor () {
+    this.order_lines = new Array();
+    this.order_total = 0;
   }
 
+  //create a blank new line
   new_line () {
     this.order_lines.push(new Order_line());
+  }
+
+  recalc_total () {
+    this.order_total = 0;
+    for (i in this.order_lines) {
+      this.order_total += this.get_line(i).total_line_price;
+    }
+    //update number of cart items in header
+    document.getElementById('num_cartitems').innerHTML = this.num_items();
+
+  } // end recalc_total()
+
+  //update total of line
+  add_cur_line () {
+    this.recalc_total();
+    line_in_process = false;
   }
 
   cur_line () {
@@ -37,19 +55,25 @@ class Cart {
   }
 
   num_items () {
-    return this.order_lines.length-1;
+    return this.order_lines.length;
   }
 
-  // add (order_line) {
-  //     this.order_lines.push(order_line);
-  // }
-
-  remove (line_id, cart) {
-    for (line in cart.order_lines)
-      if (cart.order_lines[line].line_id == line_id){
-        cart.order_lines.splice(line,1);
+  remove (line_id) {
+    for (line in this.order_lines)
+      if (this.order_lines[line].line_id == line_id){
+        this.order_lines.splice(line,1);
+        this.recalc_total();
         return;
       }
+  }
+
+  clear_cart () {
+    for (l in this.order_lines){
+      this.order_lines.remove(l);
+    }
+    this.order_total = 0;
+    //update number of cart items in header
+    document.getElementById('num_cartitems').innerHTML = 0;
   }
 } // end CLASS CART
 
@@ -61,7 +85,6 @@ class Cart {
 toppings_list_populated = false;
 cart = new Cart();
 line_in_process = false;
-// cur_order_line = new Order_line();
 
 // #############  END GLOBAL VARIABLES  #############
 
@@ -79,6 +102,9 @@ function setup_order_modal () {
   document.getElementById('menu_item_selection').onchange = refresh_modal;
   document.getElementById('size_selection').onchange = update_modal;
   document.getElementById('btn_add_to_cart').onclick = add_to_cart;
+  document.getElementById('btn_place_order').onclick = place_order;
+  document.getElementById('btn_delete_cart').onclick = cart.clear_cart();
+
   //TODO: make sure this btn is only enabled when there is a full item to order
 
   document.getElementById('cancel_modal').onclick = () => {
@@ -87,17 +113,46 @@ function setup_order_modal () {
 
 } // end setup_order_modal()
 
+
+function place_order() {
+  submit_order_to_Server();
+  cart.clear_cart();
+}
+
+// send current cart to server
+function submit_order_to_server() {
+  //initialize new request
+  const place_order = new XMLHttpRequest();
+
+
+  get_menu_items.open('POST', '/place_order');
+  get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+
+  //when request is completed
+  get_menu_items.onload = () => {
+    //extract JSON data from request
+    const response = JSON.parse(place_order.responseText)
+    //TODO: confirm order and clear data for new order
+  } //end onload
+
+  // Add data to send with request
+  const data = new FormData();
+
+  data.append('cart', JSON.stringify(cart));
+
+  place_order.send(data); // Send request
+  return false; // avoid sending the form
+
+
+} // end place_order
+
+
+
 // get selections from modal --  create order line -- add line to cart
 function add_to_cart() {
-
-  line_in_process = false;
+  cart.add_cur_line();
   clear_modal();
-
-  c = document.getElementById('num_cartitems')
-  c.innerHTML = cart.num_items();
-
-  console.log(cart);
-
+  create_cart_table();
 } // end add to cart
 
 function refresh_modal() {
@@ -469,6 +524,13 @@ function clear_toppings() {
   }
 } // end clear_toppings()
 
+function clear_cart_table() {
+  cart_table = document.getElementById('cart_table');
+  while (cart_table.lastChild.className == "order_line") {
+    cart_table.removeChild(cart_table.lastChild);
+  }
+} // end clear_cart_table()
+
 // clear sub_options from the DOM
 function clear_sub_options() {
   var sub_options = document.getElementById("sub_options")
@@ -478,32 +540,93 @@ function clear_sub_options() {
 } // end clear_toppings()
 
 
-funcction display_cart() {
+function create_cart_table() {
+
+  //clear cart table and redraw it
+  clear_cart_table();
+  cart_table = document.getElementById('cart_table');
 
   for (line in cart.order_lines) {
-    display_cart_line(cart.get_line(line));
+    line_num = Number(line) + 1;
+    append_cart_line(line_num, cart.get_line(line), cart_table);
   }
 
-} // end display_cart()
+  order_total = document.getElementById('order_total');
+  order_total.style.textAlign = "right";
+  order_total.innerHTML = `$${cart.order_total.toFixed(2)}`;
 
-function display_cart_line(line) {
+} // end display_cart_table()
 
-  // append to id="cart_table"
-  // <tr>
-  //   <th>Line</th>
-  //   <th>Item</th>
-  //   <th>Options</th>
-  //   <th></th>
-  //   <th>Price</th>
-  // </tr>
+
+
+
+function append_cart_line(num, line, cart_table) {
+
   row = document.createElement('tr');
-  line = document.createElement('td');
+  row.className = "order_line";
+  row.id = `line_${line.line_id}`;
+  line_num = document.createElement('td');
   item = document.createElement('td');
   options = document.createElement('td');
   subttl = document.createElement('td');
   price = document.createElement('td');
 
-  item.innerHTML = 
+  if (line.size != '') {
+    size = `(${line.size})`;
+  } else {
+    size = '';
+  }
+
+  // configure remove item button
+  line_num.innerHTML = num;
+
+  const remove_but = document.createElement('span');
+  remove_but.className = "badge badge-pill badge-danger ml-2";
+  remove_but.innerHTML = "&times;";
+  remove_but.onclick = () => {
+    cart.remove(line.line_id);
+    create_cart_table();
+  } // end remove button on click
+  line_num.appendChild(remove_but);
 
 
-} // end display_cart_line()
+  item.innerHTML = `${line.category}: ${line.item} ${size}`;
+
+  if (item.category == "Pizza"){
+      options.innerHTML = `${item.toppings.length} toppings`;
+  } else {
+    options.innerHTML = "";
+  }
+
+  subttl.innerHTML = "";
+  price.innerHTML = `$${line.total_line_price.toFixed(2)}`;
+  price.style.textAlign = "right";
+
+  row.appendChild(line_num);
+  row.appendChild(item);
+  row.appendChild(options);
+  row.appendChild(subttl);
+  row.appendChild(price);
+
+  cart_table.appendChild(row);
+
+  //if there are toppings or addons, add extra rows
+  // if (line.category == "Pizza") {
+  //
+  //   if (line.toppings_list.length != 0) {
+  //     //make a new row for each topping
+  //     for (r in line.toppings_list) {
+  //       console.log(r);
+  //       trow = document.createElement('tr');
+  //       tdata = document.createElement('td');
+  //       tdata.innerHTML = `&emsp;&emsp;+${line.toppings_list[r]}`;
+  //       trow.appendChild(tdata);
+  //       cart_table.appendChild(trow);
+  //     }
+  //
+  //   }
+  // }
+
+
+
+} // end append_cart_line()
