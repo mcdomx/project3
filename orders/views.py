@@ -47,16 +47,11 @@ def register(request):
 # many items may be returned or a single item
 def get_menu_items(request):
 
-    sel_item= request.POST.get("sel_item")
+    item= request.POST.get("sel_item")
+    category = request.POST.get("sel_cat")
     sel_size= request.POST.get("sel_size")
     sel_toppings= request.POST.get("sel_toppings")
     sel_subOptions= request.POST.get("sel_subOptions")
-
-
-    # parse sel_item -- split by :
-    split_item = sel_item.split(":")
-    category = split_item[0]
-    item = split_item[1].lstrip()
 
     sel_toppings = sel_toppings.split(",")
     print (sel_toppings)

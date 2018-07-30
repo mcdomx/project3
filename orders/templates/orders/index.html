@@ -90,6 +90,19 @@
             <div class="modal-body">
               <p>Click 'Place Order' to get your food!</p>
 
+              <table id="cart_table" style="width:100%">
+                <tr>
+                  <th>Line</th>
+                  <th>Item</th>
+                  <th>Options</th>
+                  <th></th>
+                  <th>Price</th>
+                </tr>
+                </hr>
+                <!-- This is where line items will be added -->
+              </table>
+
+
               <div hidden id="delivery_selection" class="form-group">
                 <input type="radio" class="delivery_option" name="delivery_option" value="Pick_up"> Pick-up
                 <input type="radio" class="delivery_option" name="delivery_option" value="Deliver"> Deliver

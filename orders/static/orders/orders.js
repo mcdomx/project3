@@ -1,18 +1,22 @@
 
-
-
-
 // #############  CLASSES  #############
 
 class Order_line {
-  constructor (category, menu_item, size, toppings_list, sub_options_list) {
+  constructor (category, item, size, item_price, toppings_list, sub_options_list, ttl_price) {
     this.line_id = (new Date).getTime();
     this.category = category;
-    this.menu_item = menu_item;
+    this.item = item;
+    this.item_price = item_price;
     this.size = size;
-    this.toppings_list = new Array(toppings_list);
-    this.sub_options_list = new Array(sub_options_list);
+    this.toppings_list = toppings_list;
+    this.sub_options_list = [];
+    this.total_line_price = ttl_price;
   } //  end constructor
+
+
+} //end CLASS ORDER_LINE
+
+Order_line.prototype.publicMethod = function () {
 }
 
 class Cart {
@@ -20,20 +24,34 @@ class Cart {
     this.order_lines = new Array(order_lines);
   }
 
-  add (order_line) {
-      this.order_lines.append(order_line);
+  new_line () {
+    this.order_lines.push(new Order_line());
   }
 
-  remove(line_id, cart) {
+  cur_line () {
+    return this.order_lines[ cart.order_lines.length - 1 ];
+  }
+
+  get_line (line_num) {
+    return this.order_lines[line_num];
+  }
+
+  num_items () {
+    return this.order_lines.length-1;
+  }
+
+  // add (order_line) {
+  //     this.order_lines.push(order_line);
+  // }
+
+  remove (line_id, cart) {
     for (line in cart.order_lines)
       if (cart.order_lines[line].line_id == line_id){
         cart.order_lines.splice(line,1);
         return;
       }
-
   }
-
-}
+} // end CLASS CART
 
 // #############  END CLASSES  #############
 
@@ -42,6 +60,8 @@ class Cart {
 
 toppings_list_populated = false;
 cart = new Cart();
+line_in_process = false;
+// cur_order_line = new Order_line();
 
 // #############  END GLOBAL VARIABLES  #############
 
@@ -56,9 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setup_order_modal () {
 
-  document.querySelector('#menu_item_selection').onchange = refresh_modal;
-  document.querySelector('#size_selection').onchange = update_modal;
+  document.getElementById('menu_item_selection').onchange = refresh_modal;
+  document.getElementById('size_selection').onchange = update_modal;
   document.getElementById('btn_add_to_cart').onclick = add_to_cart;
+  //TODO: make sure this btn is only enabled when there is a full item to order
 
   document.getElementById('cancel_modal').onclick = () => {
     clear_modal();
@@ -66,30 +87,18 @@ function setup_order_modal () {
 
 } // end setup_order_modal()
 
-
+// get selections from modal --  create order line -- add line to cart
 function add_to_cart() {
 
+  line_in_process = false;
+  clear_modal();
 
-  menu_item = get_selected_menu_item()
-  //parse to get cat and item
-  split_menu_item = menu_item.split(':');
-  category = split_menu_item[0];
-  item = split_menu_item[1].trim();
+  c = document.getElementById('num_cartitems')
+  c.innerHTML = cart.num_items();
 
-  size = get_selected_size()
-  toppings_list = get_selected_pizza_toppings()
-  sub_options_list = get_selected_subOptions()
+  console.log(cart);
 
-  new_line = new Order_line(category, item, size, toppings_list, sub_options_list);
-
-  // if (!localStorage.getItem("cart")) {
-  //   localStorage.setItem("cart", new Cart() );
-  // }
-
-  cart.order_lines.push(new_line);
-
-
-}
+} // end add to cart
 
 function refresh_modal() {
   draw_modal(initial_modal);
@@ -104,9 +113,15 @@ function update_modal() {
 // will also update the price
 function draw_modal(modal_function) {
 
+      if (line_in_process == false) {
+        cart.new_line();
+        line_in_process = true;
+      }
+
       //initialize new request
       const get_menu_items = new XMLHttpRequest();
-      const sel_item = get_selected_menu_item();
+      const sel_item = get_selected_menu_item().item;
+      const sel_cat = get_selected_menu_item().category;
       const sel_size = get_selected_size();
       const sel_toppings = get_selected_pizza_toppings();
       const sel_subOptions = get_selected_subOptions();
@@ -125,6 +140,7 @@ function draw_modal(modal_function) {
       const data = new FormData();
 
       data.append('sel_item', sel_item);
+      data.append('sel_cat', sel_cat);
       data.append('sel_size', sel_size);
       data.append('sel_toppings', sel_toppings);
       data.append('sel_subOptions', sel_subOptions);
@@ -162,7 +178,6 @@ function initial_modal(items) {
     clear_sub_options();
     load_sub_options();
     document.querySelector('#size_selection').hidden = false;
-    // document.querySelector('#toppings_group').hidden = true;
     document.querySelector('#sub_options').hidden = false;
   } else { // otherwise, clear the toppings and hide them
     clear_sub_options();
@@ -170,9 +185,7 @@ function initial_modal(items) {
 
   if (items[0].category_id == 'Dinner Platter' ) {
     document.querySelector('#size_selection').hidden = false;
-
   }
-
 
   // if the items count is 1, update the line summary with price
   if ((items.length) == 1) {
@@ -183,12 +196,10 @@ function initial_modal(items) {
 
 
 
-
-
 function load_sub_options() {
   //initialize new request
   const get_sub_options = new XMLHttpRequest();
-  const sel_item = get_selected_menu_item();
+  const sel_item = get_selected_menu_item().item;
   const sel_size = get_selected_size();
 
   get_sub_options.open('POST', '/get_sub_options');
@@ -306,7 +317,11 @@ function load_pizza_toppings() {
 
 function get_selected_menu_item () {
     var i = document.getElementById("menu_item_selection");
-    return i.options[i.selectedIndex].text;
+    i_text = i.options[i.selectedIndex].text;
+    i_split = i_text.split(':');
+    category = i_split[0];
+    item = i_split[1].trim();
+    return {"category":category, "item":item};
 }
 
 // get the selected size.  return false if neither is selected
@@ -357,6 +372,8 @@ function update_line_summary(item_list) {
   item = item_list[0];
   s_line = document.getElementById('item_display');
 
+  //TODO: consider first updating the order line and then displaying results.  Wait till you have the order line working to do this.
+
   if (item.category_id == "Pizza") {
     s_line.innerHTML = `${item.item} (${item.size}) // toppings: ${item.toppings} // Price: ${item.price}`;
 
@@ -385,7 +402,35 @@ function update_line_summary(item_list) {
     s_line.innerHTML = `${item.category_id}:${item.item} // Price: ${item.price}`;
   }
 
+  update_order_line(item);
+
 } // update_item_display()
+
+
+function update_order_line(item) {
+
+  cur_order_line = cart.cur_line();
+  // this.line_id = (new Date).getTime();
+
+
+  cur_order_line.category = item.category_id;
+  cur_order_line.item = item.item;
+  cur_order_line.item_price = item.price;
+  cur_order_line.size = item.size;
+  cur_order_line.toppings_list = get_selected_pizza_toppings();
+  cur_order_line.total_line_price = Number(item.price);
+
+  //build sub-options dictionary --> e.g. {"mushrooms":"0.50", :Green Peppers":"0.50"}
+  addons = document.getElementsByName("sub_option");
+  for (i=0; i<addons.length; i++) {
+    if (addons[i].checked == true) {
+      cur_order_line.sub_options_list[addons[i].value] =  Number(addons[i].dataset.addon_price);
+      cur_order_line.total_line_price += Number(addons[i].dataset.addon_price);
+    }
+  }
+
+} // end update_order_line()
+
 
 // clears all selections in modal - called when modal is cancelled
 function clear_modal () {
@@ -396,6 +441,9 @@ function clear_modal () {
   document.getElementById('toppings_group').hidden = true;
   clear_sub_options()
   document.getElementById("sub_options").hidden = true;
+  document.getElementById('item_display').innerHTML = '';
+
+  //TODO: cancel current order line from cart
 
 } //end clear_modal()
 
@@ -428,3 +476,34 @@ function clear_sub_options() {
     sub_options.removeChild(sub_options.firstChild);
   }
 } // end clear_toppings()
+
+
+funcction display_cart() {
+
+  for (line in cart.order_lines) {
+    display_cart_line(cart.get_line(line));
+  }
+
+} // end display_cart()
+
+function display_cart_line(line) {
+
+  // append to id="cart_table"
+  // <tr>
+  //   <th>Line</th>
+  //   <th>Item</th>
+  //   <th>Options</th>
+  //   <th></th>
+  //   <th>Price</th>
+  // </tr>
+  row = document.createElement('tr');
+  line = document.createElement('td');
+  item = document.createElement('td');
+  options = document.createElement('td');
+  subttl = document.createElement('td');
+  price = document.createElement('td');
+
+  item.innerHTML = 
+
+
+} // end display_cart_line()
