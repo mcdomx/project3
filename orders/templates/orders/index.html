@@ -18,6 +18,14 @@
         View Cart
       </button>
 
+      {% if user.is_superuser %}
+      <a href={% url 'order_maint' %}>
+        <button type="button" class="btn btn-primary">
+            Order Status Maintenance
+        </button>
+      </a>
+      {% endif %}
+
       <!-- Add Item Modal -->
       <div class="modal fade" id="order_item_modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">

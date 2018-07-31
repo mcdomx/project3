@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Menu_categories, Menu_items, Sub_addons, Order, Order_line, Pizza_toppings, Sizes, Toppings
+from .models import Menu_categories, Menu_items, Sub_addons, Order, Order_line, Pizza_toppings, Sizes, Toppings, Order_status
 
 # Register your models here.
 admin.site.register(Menu_categories)
@@ -10,6 +10,7 @@ admin.site.register(Order_line)
 admin.site.register(Pizza_toppings)
 admin.site.register(Sizes)
 admin.site.register(Toppings)
+admin.site.register(Order_status)
 
 # Define the admin class
 # class Menu_itemsInstanceInline(admin.TabularInline):

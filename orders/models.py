@@ -125,9 +125,17 @@ class Pizza_toppings(models.Model):
                 rv.append(t.topping)
         return rv
 
+#order status'
+class Order_status(models.Model):
+    status = models.CharField(max_length = 64, blank = False)
+
+    def __str__(self):
+        return f'{self.status}'
+
 # order
 class Order(models.Model):
     date = models.DateTimeField(auto_now=True)
+    status = models.ForeignKey(Order_status, on_delete = models.CASCADE)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     def __str__(self):

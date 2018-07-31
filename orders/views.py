@@ -19,6 +19,13 @@ def index(request):
     return render(request, "orders/index.html", context)
 
 
+def order_maint(request):
+    context = {
+
+    }
+    return render(request, "orders/order_maint.html", context)
+
+
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 
@@ -100,10 +107,6 @@ def place_order(request):
     }
 
     return JsonResponse(context)
-
-
-
-
 
 
 
