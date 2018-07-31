@@ -15,7 +15,6 @@ class Order_line {
     this.total_line_price = ttl_price;
   } //  end constructor
 
-
 } //end CLASS ORDER_LINE
 
 Order_line.prototype.publicMethod = function () {
@@ -148,8 +147,6 @@ function submit_order_to_server() {
 
 } // end place_order
 
-
-
 // get selections from modal --  create order line -- add line to cart
 function add_to_cart() {
   cart.add_cur_line();
@@ -180,15 +177,16 @@ function draw_modal(modal_function) {
       const sel_item = get_selected_menu_item().item;
       const sel_cat = get_selected_menu_item().category;
       const sel_size = get_selected_size();
-      const sel_toppings = get_selected_pizza_toppings();
+      const sel_toppings_list = get_selected_pizza_toppings();
       const sel_subOptions = get_selected_subOptions();
 
+      console.log("Selections from web interface:");
       console.log(sel_item);
       console.log(sel_cat);
       console.log(sel_size);
-      console.log(sel_toppings);
+      console.log(sel_toppings_list);
       console.log(sel_subOptions);
-      
+
 
       get_menu_items.open('POST', '/get_menu_items');
       get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
@@ -197,6 +195,7 @@ function draw_modal(modal_function) {
       get_menu_items.onload = () => {
         //extract JSON data from request
         const response = JSON.parse(get_menu_items.responseText)
+        console.log("Response from server:");
         console.log(response);
         modal_function(response);
       } //end onload
@@ -207,7 +206,7 @@ function draw_modal(modal_function) {
       data.append('sel_item', sel_item);
       data.append('sel_cat', sel_cat);
       data.append('sel_size', sel_size);
-      data.append('sel_toppings', sel_toppings);
+      data.append('sel_toppings_list', sel_toppings_list);
       data.append('sel_subOptions', sel_subOptions);
 
       get_menu_items.send(data); // Send request
@@ -224,7 +223,7 @@ function initial_modal(items) {
   document.querySelector('#sub_options').hidden = true;
 
   // If item has size option, show size
-  if (items[0].size != '') {
+  if (items[0].size != 'NA') {
     document.querySelector('#size_selection').hidden = false;
   } else {  //otherwise, clear the size selection and hide it
     // clear_size();
@@ -248,8 +247,7 @@ function initial_modal(items) {
     clear_sub_options();
   }
 
-
-  if (items[0].category == 'Dinner Platter' ) {
+  if (items[0].category == 'Dinner Platter') {
     document.querySelector('#size_selection').hidden = false;
   }
 
@@ -443,8 +441,7 @@ function update_line_summary(item_list) {
   //TODO: consider first updating the order line and then displaying results.  Wait till you have the order line working to do this.
 
   if (item.category == "Pizza") {
-    console.log(item);
-    s_line.innerHTML = `${item.item} (${item.size}) // toppings: ${item.toppings_desc} // Price: ${item.price}`;
+    s_line.innerHTML = `${item.item} (${item.size}) // ${item.toppings_desc} // Price: ${item.price}`;
 
   } else if (item.category == "Sub") {
 

@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
-from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes
+from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes, Toppings
 from django.http import JsonResponse
 
 import json
@@ -50,33 +50,31 @@ def get_menu_items(request):
     item= request.POST.get("sel_item")
     category = request.POST.get("sel_cat")
     sel_size= request.POST.get("sel_size")
-    sel_toppings= request.POST.get("sel_toppings")
+    sel_toppings_list= request.POST.get("sel_toppings_list")
     sel_subOptions= request.POST.get("sel_subOptions")
 
-    sel_toppings = sel_toppings.split(",")
-    print (sel_toppings)
     if str(category) in "Pizza":
+        sel_toppings = sel_toppings_list.split(",")
         if sel_toppings[0] == '':
-            sel_toppings = "CHEESE"
+            option = "CHEESE"
         elif len(sel_toppings) > 3:
-            sel_toppings = "SPECIAL"
+            option = "SPECIAL"
         else:
-            sel_toppings = len(sel_toppings)
+            option = len(sel_toppings)
     else:
-        sel_toppings = ''
+        option = 'NA'
 
     if str(category) in "Pasta" or str(category) in "Salad":
-        sel_size=''
+        sel_size='NA'
 
     print(f"from form. category: {category}")
     print(f"from form. sel_item: {item}")
-    print(f"from form. sel_size: '{sel_size}'")
-    print(f"from form. sel_toppings: {sel_toppings}")
+    print(f"from form. sel_size: {sel_size}")
+    print(f"from form. sel_toppings_list: {sel_toppings_list}")
     print(f"from form. sel_subOptions: {sel_subOptions}")
     size = Sizes.objects.get(size=sel_size)
-
-
-    menu_items = Menu_items.objects.filter(category=category, item=item, size=size, toppings=sel_toppings)
+    topping = Toppings.objects.get(option=option)
+    menu_items = Menu_items.objects.filter(category=category, item=item, size=size, toppings=topping)
     for m in menu_items:
         print(m.price)
         print(m.size.size)
@@ -96,37 +94,20 @@ def get_toppings(request):
     return JsonResponse(response, safe=False)
 
 def get_sub_options(request):
-    response = []
+
     sel_item = request.POST.get("sel_item")
     sel_size = request.POST.get("sel_size")
     sel_cat = request.POST.get("sel_cat")
 
     # get the menu_item and see if it offers sub options and extended options
-    item =  Menu_items.objects.filter(category=sel_cat, item=sel_item, size=sel_size).first()
-    addons = item.allow_sub_addons
-    ext_addons = item.extended_addons
-
-    # get the sub addons from the sub_addons table
-    if (ext_addons):
-        s_options = Sub_addons.objects.filter(available=True, size=sel_size)
-    else:
-        s_options = Sub_addons.objects.filter(available=True, size=sel_size, extended_addon=False)
-
-
-
-    s_options = Sub_addons.objects.filter(available=True, restricted_menu_item='', size=sel_size)
+    item =  Menu_items.objects.get(category=sel_cat, item=sel_item, size=sel_size)
+    print(f"from get sub_options item: {item.addons}")
+    addons = item.addons #available addons for item selected
 
     # create a list of dictionary items for response
-    for obj in s_options:
+    response = []
+    for obj in addons:
         response.append(obj.as_dict())
-
-    # find any sub options that are restricted to the item selected
-    # append them to the response
-    s_options_restricted = Sub_addons.objects.filter(available=True, restricted_menu_item=sel_item, size=sel_size)
-    if (s_options_restricted):
-        for obj in s_options_restricted:
-            response.append(obj.as_dict())
-
 
     return JsonResponse(response, safe=False)
 

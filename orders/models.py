@@ -20,6 +20,9 @@ class Toppings (models.Model):
     option = models.CharField(primary_key=True, max_length = 16)
     description = models.CharField(max_length = 64)
 
+    def __str__(self):
+        return f'{self.description}'
+
 # sub_addons
 class Sub_addons(models.Model):
 
@@ -33,26 +36,16 @@ class Sub_addons(models.Model):
         return Sub_addons.objects(add_on=add_on).price
 
     def as_dict(self):
-        rv = vars(self)
-        del rv['_state']
+        rv = {}
+        rv["add_on"] = self.add_on
+        rv["price"] = self.price
         return rv
 
-
-
-    # def __str__(self):
-    #     return f'{self.add_on} ({self.size})'
+    def __str__(self):
+        return f'{self.add_on} ({self.size}) ${self.price}'
 
 # menu_items
 class Menu_items(models.Model):
-
-    # TOPPINGS_CHOICES = (
-    #     ('CHEESE', 'cheese'),
-    #     ('1', '1 topping' ),
-    #     ('2', '2 toppings' ),
-    #     ('3', '3 toppings' ),
-    #     ('SPECIAL', 'special'),
-    #     ('NA', 'no toppings')
-    # )
 
     id = models.AutoField(primary_key=True)
     item = models.CharField(max_length = 64)
@@ -63,6 +56,16 @@ class Menu_items(models.Model):
     available = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
+    def __str__(self):
+        rv = f"{self.category}:{self.item}"
+        if (self.size.size != "NA"):
+            rv += f" ({self.size.size})"
+        if (self.toppings.option != "NA"):
+            rv += f" ({self.toppings.option})"
+        rv += f" ${self.price}"
+        if (self.available == False):
+            rv += " UNAVAILABLE"
+        return rv
 
     def get_item(item, size, toppings):
         try:
@@ -81,9 +84,8 @@ class Menu_items(models.Model):
         rv = {}
         rv["category"] = self.category.category
         rv["item"] = self.item
-        rv["size"] = self.size.description
-        if self.category.category is "Pizza":
-            rv["toppings_desc"] = self.toppings.description
+        rv["size"] = self.size.size
+        rv["toppings_desc"] = self.toppings.description
         rv["price"] = self.price
         return rv
 
