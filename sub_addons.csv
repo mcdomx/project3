@@ -1,9 +1,9 @@
-﻿id,add_on,size,available,price,restricted_menu_item
-1,Mushrooms,SM,1,0.50,Steak + Cheese
-2,Mushrooms,LG,1,0.50,Steak + Cheese
-3,Green Peppers,SM,1,0.50,Steak + Cheese
-4,Green Peppers,LG,1,0.50,Steak + Cheese
-5,Onions,SM,1,0.50,Steak + Cheese
-6,Onions,LG,1,0.50,Steak + Cheese
-7,Extra Cheese,SM,1,0.50,
-8,Extra Cheese,LG,1,0.50,
+id,add_on,size,available,price
+1,Mushrooms,SM,1,0.5
+2,Mushrooms,LG,1,0.5
+3,Green Peppers,SM,1,0.5
+4,Green Peppers,LG,1,0.5
+5,Onions,SM,1,0.5
+6,Onions,LG,1,0.5
+7,Extra Cheese,SM,1,0.5
+8,Extra Cheese,LG,1,0.5

@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
-from .models import Menu_items, Pizza_toppings, Sub_addons
+from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes
 from django.http import JsonResponse
 
 import json
@@ -73,9 +73,13 @@ def get_menu_items(request):
     print(f"from form. sel_size: '{sel_size}'")
     print(f"from form. sel_toppings: {sel_toppings}")
     print(f"from form. sel_subOptions: {sel_subOptions}")
-    menu_items = Menu_items.objects.filter(category=category, item=item, size=sel_size, toppings=sel_toppings)
+    size = Sizes.objects.get(size=sel_size)
+
+
+    menu_items = Menu_items.objects.filter(category=category, item=item, size=size, toppings=sel_toppings)
     for m in menu_items:
         print(m.price)
+        print(m.size.size)
 
     response = []
     # make each item in the query result a dictionary object and add to response
@@ -93,8 +97,23 @@ def get_toppings(request):
 
 def get_sub_options(request):
     response = []
-    sel_item= request.POST.get("sel_item")
-    sel_size= request.POST.get("sel_size")
+    sel_item = request.POST.get("sel_item")
+    sel_size = request.POST.get("sel_size")
+    sel_cat = request.POST.get("sel_cat")
+
+    # get the menu_item and see if it offers sub options and extended options
+    item =  Menu_items.objects.filter(category=sel_cat, item=sel_item, size=sel_size).first()
+    addons = item.allow_sub_addons
+    ext_addons = item.extended_addons
+
+    # get the sub addons from the sub_addons table
+    if (ext_addons):
+        s_options = Sub_addons.objects.filter(available=True, size=sel_size)
+    else:
+        s_options = Sub_addons.objects.filter(available=True, size=sel_size, extended_addon=False)
+
+
+
     s_options = Sub_addons.objects.filter(available=True, restricted_menu_item='', size=sel_size)
 
     # create a list of dictionary items for response
@@ -113,7 +132,9 @@ def get_sub_options(request):
 
 
 def place_order(request):
-    order = request.POST.get("cart")
+    order = request.POST.get("cart");
+    # loop through items and add to a new order
+
 
 
 # notes from class

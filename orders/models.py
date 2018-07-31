@@ -9,28 +9,60 @@ class Menu_categories(models.Model):
     def __str__(self):
         return f'{self.category}'
 
+class Sizes (models.Model):
+    size = models.CharField(primary_key=True, max_length = 16)
+    description = models.CharField(max_length = 64)
+
+    def __str__(self):
+        return f'{self.size}-{self.description}'
+
+class Toppings (models.Model):
+    option = models.CharField(primary_key=True, max_length = 16)
+    description = models.CharField(max_length = 64)
+
+# sub_addons
+class Sub_addons(models.Model):
+
+    id = models.AutoField(primary_key = True)
+    add_on = models.CharField(max_length = 64)
+    size = models.ForeignKey(Sizes, on_delete = models.CASCADE)
+    available = models.BooleanField(default = True)
+    price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+
+    def get_price(add_on):
+        return Sub_addons.objects(add_on=add_on).price
+
+    def as_dict(self):
+        rv = vars(self)
+        del rv['_state']
+        return rv
+
+
+
+    # def __str__(self):
+    #     return f'{self.add_on} ({self.size})'
+
 # menu_items
 class Menu_items(models.Model):
-    SIZE_CHOICES = (
-     ('SM', 'small'),
-     ('LG', 'large')
-    )
 
-    TOPPINGS_CHOICES = (
-        ('CHEESE', 'cheese'),
-        ('1', '1 topping' ),
-        ('2', '2 toppings' ),
-        ('3', '3 toppings' ),
-        ('SPECIAL', 'special')
-    )
+    # TOPPINGS_CHOICES = (
+    #     ('CHEESE', 'cheese'),
+    #     ('1', '1 topping' ),
+    #     ('2', '2 toppings' ),
+    #     ('3', '3 toppings' ),
+    #     ('SPECIAL', 'special'),
+    #     ('NA', 'no toppings')
+    # )
 
+    id = models.AutoField(primary_key=True)
     item = models.CharField(max_length = 64)
-    category = models.ForeignKey(Menu_categories, on_delete = models.CASCADE, default="None", related_name="items")
-    allow_sub_addons = models.BooleanField(default=False)
+    category = models.ForeignKey(Menu_categories, on_delete = models.CASCADE)
+    size = models.ForeignKey(Sizes, on_delete = models.CASCADE, blank = True, null = True)
+    toppings = models.ForeignKey(Toppings, on_delete = models.CASCADE, blank = True, null = True)
+    addons = models.ManyToManyField(Sub_addons, blank = True)
     available = models.BooleanField(default=True)
-    size = models.CharField(max_length = 16, choices = SIZE_CHOICES)
-    toppings = models.CharField(max_length = 64, choices = TOPPINGS_CHOICES)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+
 
     def get_item(item, size, toppings):
         try:
@@ -46,8 +78,13 @@ class Menu_items(models.Model):
         return self.price
 
     def as_dict(self):
-        rv = vars(self)
-        del rv['_state']
+        rv = {}
+        rv["category"] = self.category.category
+        rv["item"] = self.item
+        rv["size"] = self.size.description
+        if self.category.category is "Pizza":
+            rv["toppings_desc"] = self.toppings.description
+        rv["price"] = self.price
         return rv
 
 
@@ -60,37 +97,12 @@ class Menu_items(models.Model):
     #     else:
     #         return f'{self.category} : {self.item}  ({self.size})  {self.get_toppings_display()}'
 
-# sub_addons
-class Sub_addons(models.Model):
-    SIZE_CHOICES = (
-     ('SM', 'small'),
-     ('LG', 'large')
-    )
 
-    add_on = models.CharField(max_length = 64)
-    size = models.CharField(max_length = 16, choices = SIZE_CHOICES)
-    available = models.BooleanField(default = True)
-    restricted_menu_item = models.CharField(max_length = 64)
-    price = models.DecimalField(blank = False, max_digits=5, decimal_places=2, default=0.00)
-
-    def get_price(add_on):
-        return Sub_addons.objects(add_on=add_on).price
-
-    def as_dict(self):
-        rv = vars(self)
-        del rv['_state']
-        return rv
-
-    # def __str__(self):
-    #     return f'{self.add_on} ({self.size})'
 
 # toppings
 class Pizza_toppings(models.Model):
     topping = models.CharField(max_length = 64, blank = False)
     available = models.BooleanField(default = True)
-
-    # def is_available(topping):
-    #     return Pizza_toppings.objects(topping=topping).available
 
     def __str__(self):
         return f'{self.topping}'
@@ -102,8 +114,7 @@ class Pizza_toppings(models.Model):
             if t.available is True:
                 rv.append(t.topping)
         return rv
-        # for variable in vars(self):
-        #     rv[variable] = variable
+
 
 
 
@@ -111,7 +122,8 @@ class Pizza_toppings(models.Model):
 class Order_line(models.Model):
     SIZE_CHOICES = (
      ('SM', 'small'),
-     ('LG', 'large')
+     ('LG', 'large'),
+     ('NA', 'one size')
     )
 
     TOPPINGS_CHOICES = (
@@ -119,13 +131,15 @@ class Order_line(models.Model):
         ('1', '1 topping' ),
         ('2', '2 toppings' ),
         ('3', '3 toppings' ),
-        ('SPECIAL', 'special')
+        ('SPECIAL', 'special'),
+        ('NA', 'no toppings')
     )
 
+    line_num = models.IntegerField()
     item = models.ForeignKey(Menu_items, on_delete = models.CASCADE, blank = True, null = True)
-    # category = models.ForeignKey(Menu_categories, on_delete = models.CASCADE, blank = True, null = True)
-    size = models.CharField(max_length = 16, choices = SIZE_CHOICES, blank = True)
-    toppings = models.CharField(max_length = 64, choices = TOPPINGS_CHOICES, blank = True)
+    category = models.ForeignKey(Menu_categories, on_delete = models.CASCADE, blank = True, null = True)
+    size = models.CharField(max_length = 16, choices = SIZE_CHOICES, blank = True, null = True)
+    toppings = models.CharField(max_length = 64, choices = TOPPINGS_CHOICES, blank = True, null = True)
     topping_items = models.ManyToManyField(Pizza_toppings, blank = True)
     sub_addons = models.ManyToManyField(Sub_addons, blank = True)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
@@ -187,6 +201,7 @@ class Order_line(models.Model):
 # order
 class Order(models.Model):
 
+    order_num = models.AutoField(primary_key=True)
     date = models.DateTimeField(auto_now=True)
     lines = models.ManyToManyField(Order_line)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)

@@ -2,12 +2,14 @@
 // #############  CLASSES  #############
 
 class Order_line {
-  constructor (category, item, size, item_price, toppings_list, sub_options_list, ttl_price) {
+  constructor (category, item, size, item_price, toppings_desc, toppings_list, sub_options_list, ttl_price) {
+    //TODO: make these all null
     this.line_id = (new Date).getTime();
     this.category = category;
     this.item = item;
     this.item_price = item_price;
     this.size = size;
+    this.toppings_desc = toppings_desc;
     this.toppings_list = toppings_list;
     this.sub_options_list = [];
     this.total_line_price = ttl_price;
@@ -181,6 +183,13 @@ function draw_modal(modal_function) {
       const sel_toppings = get_selected_pizza_toppings();
       const sel_subOptions = get_selected_subOptions();
 
+      console.log(sel_item);
+      console.log(sel_cat);
+      console.log(sel_size);
+      console.log(sel_toppings);
+      console.log(sel_subOptions);
+      
+
       get_menu_items.open('POST', '/get_menu_items');
       get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
 
@@ -188,6 +197,7 @@ function draw_modal(modal_function) {
       get_menu_items.onload = () => {
         //extract JSON data from request
         const response = JSON.parse(get_menu_items.responseText)
+        console.log(response);
         modal_function(response);
       } //end onload
 
@@ -221,7 +231,7 @@ function initial_modal(items) {
   }
 
   // if item is a Pizza, show the toppings selection
-  if (items[0].category_id == 'Pizza' ) {
+  if (items[0].category == 'Pizza' ) {
     if (!toppings_list_populated) { load_pizza_toppings() }
     document.querySelector('#toppings_group').hidden = false;
   } else { // otherwise, clear the toppings and hide them
@@ -229,7 +239,7 @@ function initial_modal(items) {
   }
 
   // if item is a Sub, show extra cheese option
-  if (items[0].category_id == 'Sub' ) {
+  if (items[0].category == 'Sub' ) {
     clear_sub_options();
     load_sub_options();
     document.querySelector('#size_selection').hidden = false;
@@ -238,7 +248,8 @@ function initial_modal(items) {
     clear_sub_options();
   }
 
-  if (items[0].category_id == 'Dinner Platter' ) {
+
+  if (items[0].category == 'Dinner Platter' ) {
     document.querySelector('#size_selection').hidden = false;
   }
 
@@ -255,6 +266,7 @@ function load_sub_options() {
   //initialize new request
   const get_sub_options = new XMLHttpRequest();
   const sel_item = get_selected_menu_item().item;
+  const sel_cat = get_selected_menu_item().category;
   const sel_size = get_selected_size();
 
   get_sub_options.open('POST', '/get_sub_options');
@@ -297,6 +309,7 @@ function load_sub_options() {
     data = new FormData();
     data.append('sel_item', sel_item);
     data.append('sel_size', sel_size);
+    data.append('sel_cat', sel_cat);
 
     // Send request
     get_sub_options.send(data);
@@ -429,15 +442,16 @@ function update_line_summary(item_list) {
 
   //TODO: consider first updating the order line and then displaying results.  Wait till you have the order line working to do this.
 
-  if (item.category_id == "Pizza") {
-    s_line.innerHTML = `${item.item} (${item.size}) // toppings: ${item.toppings} // Price: ${item.price}`;
+  if (item.category == "Pizza") {
+    console.log(item);
+    s_line.innerHTML = `${item.item} (${item.size}) // toppings: ${item.toppings_desc} // Price: ${item.price}`;
 
-  } else if (item.category_id == "Sub") {
+  } else if (item.category == "Sub") {
 
     total_line_price = Number(item.price);
     addons_text = '';
 
-    item_text = `${item.category_id}:${item.item} (${item.size})  $${item.price}`;
+    item_text = `${item.category}:${item.item} (${item.size})  $${item.price}`;
 
     addons = document.getElementsByName("sub_option");
     for (i=0; i<addons.length; i++) {
@@ -450,11 +464,11 @@ function update_line_summary(item_list) {
     total_text = `</br>Item Total: $${total_line_price.toFixed(2)}`;
     s_line.innerHTML = item_text + addons_text + total_text;
 
-  } else if (item.category_id == "Dinner Platter") {
-    s_line.innerHTML = `${item.category_id}:${item.item} (${item.size}) // Price: ${item.price}`;
+  } else if (item.category == "Dinner Platter") {
+    s_line.innerHTML = `${item.category}:${item.item} (${item.size}) // Price: ${item.price}`;
 
   } else {
-    s_line.innerHTML = `${item.category_id}:${item.item} // Price: ${item.price}`;
+    s_line.innerHTML = `${item.category}:${item.item} // Price: ${item.price}`;
   }
 
   update_order_line(item);
@@ -465,13 +479,12 @@ function update_line_summary(item_list) {
 function update_order_line(item) {
 
   cur_order_line = cart.cur_line();
-  // this.line_id = (new Date).getTime();
 
-
-  cur_order_line.category = item.category_id;
+  cur_order_line.category = item.category;
   cur_order_line.item = item.item;
   cur_order_line.item_price = item.price;
   cur_order_line.size = item.size;
+  cur_order_line.toppings_desc = item.toppings_desc;
   cur_order_line.toppings_list = get_selected_pizza_toppings();
   cur_order_line.total_line_price = Number(item.price);
 
@@ -589,7 +602,6 @@ function append_cart_line(num, line, cart_table) {
   } // end remove button on click
   line_num.appendChild(remove_but);
 
-
   item.innerHTML = `${line.category}: ${line.item} ${size}`;
 
   if (item.category == "Pizza"){
@@ -609,24 +621,5 @@ function append_cart_line(num, line, cart_table) {
   row.appendChild(price);
 
   cart_table.appendChild(row);
-
-  //if there are toppings or addons, add extra rows
-  // if (line.category == "Pizza") {
-  //
-  //   if (line.toppings_list.length != 0) {
-  //     //make a new row for each topping
-  //     for (r in line.toppings_list) {
-  //       console.log(r);
-  //       trow = document.createElement('tr');
-  //       tdata = document.createElement('td');
-  //       tdata.innerHTML = `&emsp;&emsp;+${line.toppings_list[r]}`;
-  //       trow.appendChild(tdata);
-  //       cart_table.appendChild(trow);
-  //     }
-  //
-  //   }
-  // }
-
-
 
 } // end append_cart_line()

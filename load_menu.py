@@ -10,7 +10,6 @@
 # csv files must match table layout and cofiguration
 
 import csv, sqlite3
-
 db_file = 'db.sqlite3'
 
 # main - ask user for each table load
@@ -24,6 +23,20 @@ def main():
 
     print("WARNING: Each table load will erase all exting data.")
 
+    # sizes table
+    print("ERASE & RELOAD 'sizes' table? (Y/N): ", end="")
+    response=get_Y_or_N()
+    if response is 'Y':
+        delete_table_data("orders_sizes", db)
+        load_table("sizes.csv", "orders_sizes", db, 2)
+
+    # toppings (menu option)
+    print("ERASE & RELOAD 'toppings' (menu options) table? (Y/N): ", end="")
+    response=get_Y_or_N()
+    if response is 'Y':
+        delete_table_data("orders_toppings", db)
+        load_table("toppings.csv", "orders_toppings", db, 2)
+
     # menu_categories table
     print("ERASE & RELOAD 'menu_cateogries' table? (Y/N): ", end="")
     response=get_Y_or_N()
@@ -31,19 +44,21 @@ def main():
         delete_table_data("orders_menu_categories", db)
         load_table("menu_categories.csv", "orders_menu_categories", db, 2)
 
-    # menu_items table
-    print("ERASE & RELOAD 'menu_items' table? (Y/N): ", end="")
-    response=get_Y_or_N()
-    if response is 'Y':
-        delete_table_data("orders_menu_items", db)
-        load_table("menu_items.csv", "orders_menu_items", db, 8)
-
     # sub_addons table
     print("ERASE & RELOAD 'sub_addons' table? (Y/N): ", end="")
     response=get_Y_or_N()
     if response is 'Y':
         delete_table_data("orders_sub_addons", db)
-        load_table("sub_addons.csv", "orders_sub_addons", db, 6)
+        load_table("sub_addons.csv", "orders_sub_addons", db, 5)
+
+    # menu_items table
+    print("ERASE & RELOAD 'menu_items' table? (Y/N): ", end="")
+    response=get_Y_or_N()
+    if response is 'Y':
+        delete_table_data("orders_menu_items", db)
+        load_table("menu_items.csv", "orders_menu_items", db, 7)
+
+
 
     # pizza_toppings table
     print("ERASE & RELOAD 'pizza_toppings' table? (Y/N): ", end="")
@@ -66,7 +81,6 @@ def load_table(csv_file, table, db, cols):
         return
     reader = csv.reader(f)
 
-    values = ( '', '(?)', '(?,?)', '(?,?,?)', '(?,?,?)', '(?,?,?)', '(?,?,?)')
     values = '(?'
 
     c = 1
@@ -86,7 +100,24 @@ def load_table(csv_file, table, db, cols):
     print("Committing to database...")
     db.commit()
     print("Data committed.  Data load complete.")
+
     f.close()
+
+
+def load_addons(reader):
+    i = 0
+    for row in reader:
+        if i>0:
+            print(f"Loading record: {i}: {row}")
+            Sub_addons.objects.get_or_create(
+                id = row[0],
+                add_on = row[1],
+                size = row[2],
+                available = row[3],
+                price = row[4])
+        i += 1
+
+
 
 
 # get a Y or N response from command line

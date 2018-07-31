@@ -1,69 +1,69 @@
-﻿id,menu_item,allow_sub_addons,available,size,toppings,price,menu_category
-1,Regular Pizza,0,1,SM,CHEESE,12.2,Pizza
-2,Regular Pizza,0,1,SM,1,13.2,Pizza
-3,Regular Pizza,0,1,SM,2,14.7,Pizza
-4,Regular Pizza,0,1,SM,3,15.7,Pizza
-5,Regular Pizza,0,1,SM,SPECIAL,17.25,Pizza
-6,Regular Pizza,0,1,LG,CHEESE,17.45,Pizza
-7,Regular Pizza,0,1,LG,1,19.45,Pizza
-8,Regular Pizza,0,1,LG,2,21.45,Pizza
-9,Regular Pizza,0,1,LG,3,23.45,Pizza
-10,Regular Pizza,0,1,LG,SPECIAL,25.45,Pizza
-11,Sicilian Pizza,0,1,SM,CHEESE,23.45,Pizza
-12,Sicilian Pizza,0,1,SM,1,25.45,Pizza
-13,Sicilian Pizza,0,1,SM,2,27.45,Pizza
-14,Sicilian Pizza,0,1,SM,3,28.45,Pizza
-15,Sicilian Pizza,0,1,SM,SPECIAL,29.45,Pizza
-16,Sicilian Pizza,0,1,LG,CHEESE,37.7,Pizza
-17,Sicilian Pizza,0,1,LG,1,39.7,Pizza
-18,Sicilian Pizza,0,1,LG,2,41.7,Pizza
-19,Sicilian Pizza,0,1,LG,3,43.7,Pizza
-20,Sicilian Pizza,0,1,LG,SPECIAL,44.7,Pizza
-21,Cheese,1,1,SM,,6.5,Sub
-22,Cheese,1,1,LG,,7.95,Sub
-23,Italian,1,1,SM,,6.5,Sub
-24,Italian,1,1,LG,,7.95,Sub
-25,Ham + Cheese,1,1,SM,,6.5,Sub
-26,Ham + Cheese,1,1,LG,,7.95,Sub
-27,Meatball,1,1,SM,,6.5,Sub
-28,Meatball,1,1,LG,,7.95,Sub
-29,Tuna,1,1,SM,,6.5,Sub
-30,Tuna,1,1,LG,,7.95,Sub
-31,Turkey,1,1,SM,,7.5,Sub
-32,Turkey,1,1,LG,,8.5,Sub
-33,Chicken Parmigiana,1,1,SM,,7.5,Sub
-34,Chicken Parmigiana,1,1,LG,,8.5,Sub
-35,Eggplant Parmigiana,1,1,SM,,6.5,Sub
-36,Eggplant Parmigiana,1,1,LG,,7.95,Sub
-37,Steak,1,1,SM,,6.5,Sub
-38,Steak,1,1,LG,,7.95,Sub
-39,Steak + Cheese,1,1,SM,,6.95,Sub
-40,Steak + Cheese,1,1,LG,,8.5,Sub
-41,"Sausage, Peppers & Onions",1,1,SM,,8.5,Sub
-42,Hamburger,1,1,LG,,4.6,Sub
-43,Hamburger,1,1,SM,,6.95,Sub
-44,Cheeseburger,1,1,LG,,5.1,Sub
-45,Cheeseburger,1,1,SM,,7.45,Sub
-46,Fried Chicken,1,1,LG,,6.95,Sub
-47,Fried Chicken,1,1,SM,,8.5,Sub
-48,Veggie,1,1,LG,,6.95,Sub
-49,Veggie,1,1,LG,,8.5,Sub
-50,Baked Ziti w/Mozarella,0,1,,,6.5,Pasta
-51,Baked Ziti w/Meatballs,0,1,,,8.75,Pasta
-52,Baked Ziti w/Chicken,0,1,,,9.75,Pasta
-53,Garden Salad,0,1,,,6.25,Salad
-54,Greek Salad,0,1,,,8.25,Salad
-55,Antipasto,0,1,,,8.25,Salad
-56,Salad w/Tuna,0,1,,,8.25,Salad
-57,Garden Salad,0,1,SM,,35,Dinner Platter
-58,Garden Salad,0,1,LG,,60,Dinner Platter
-59,Greek Salad,0,1,SM,,45,Dinner Platter
-60,Greek Salad,0,1,LG,,70,Dinner Platter
-61,Antipasto,0,1,SM,,45,Dinner Platter
-62,Antipasto,0,1,LG,,70,Dinner Platter
-63,Baked Ziti,0,1,SM,,35,Dinner Platter
-64,Baked Ziti,0,1,LG,,60,Dinner Platter
-65,Meatball Parm,0,1,SM,,45,Dinner Platter
-66,Meatball Parm,0,1,LG,,70,Dinner Platter
-67,Chicken Parm,0,1,SM,,45,Dinner Platter
-68,Chicken Parm,0,1,LG,,80,Dinner Platter
+﻿id,item,category,size,toppings,available,price
+1,Regular Pizza,Pizza,SM,CHEESE,1,12.2
+2,Regular Pizza,Pizza,SM,1,1,13.2
+3,Regular Pizza,Pizza,SM,2,1,14.7
+4,Regular Pizza,Pizza,SM,3,1,15.7
+5,Regular Pizza,Pizza,SM,SPECIAL,1,17.25
+6,Regular Pizza,Pizza,LG,CHEESE,1,17.45
+7,Regular Pizza,Pizza,LG,1,1,19.45
+8,Regular Pizza,Pizza,LG,2,1,21.45
+9,Regular Pizza,Pizza,LG,3,1,23.45
+10,Regular Pizza,Pizza,LG,SPECIAL,1,25.45
+11,Sicilian Pizza,Pizza,SM,CHEESE,1,23.45
+12,Sicilian Pizza,Pizza,SM,1,1,25.45
+13,Sicilian Pizza,Pizza,SM,2,1,27.45
+14,Sicilian Pizza,Pizza,SM,3,1,28.45
+15,Sicilian Pizza,Pizza,SM,SPECIAL,1,29.45
+16,Sicilian Pizza,Pizza,LG,CHEESE,1,37.7
+17,Sicilian Pizza,Pizza,LG,1,1,39.7
+18,Sicilian Pizza,Pizza,LG,2,1,41.7
+19,Sicilian Pizza,Pizza,LG,3,1,43.7
+20,Sicilian Pizza,Pizza,LG,SPECIAL,1,44.7
+21,Cheese,Sub,SM,,1,6.5
+22,Cheese,Sub,LG,,1,7.95
+23,Italian,Sub,SM,,1,6.5
+24,Italian,Sub,LG,,1,7.95
+25,Ham + Cheese,Sub,SM,,1,6.5
+26,Ham + Cheese,Sub,LG,,1,7.95
+27,Meatball,Sub,SM,,1,6.5
+28,Meatball,Sub,LG,,1,7.95
+29,Tuna,Sub,SM,,1,6.5
+30,Tuna,Sub,LG,,1,7.95
+31,Turkey,Sub,SM,,1,7.5
+32,Turkey,Sub,LG,,1,8.5
+33,Chicken Parmigiana,Sub,SM,,1,7.5
+34,Chicken Parmigiana,Sub,LG,,1,8.5
+35,Eggplant Parmigiana,Sub,SM,,1,6.5
+36,Eggplant Parmigiana,Sub,LG,,1,7.95
+37,Steak,Sub,SM,,1,6.5
+38,Steak,Sub,LG,,1,7.95
+39,Steak + Cheese,Sub,SM,,1,6.95
+40,Steak + Cheese,Sub,LG,,1,8.5
+41,"Sausage, Peppers & Onions",Sub,SM,,1,8.5
+42,Hamburger,Sub,LG,,1,4.6
+43,Hamburger,Sub,SM,,1,6.95
+44,Cheeseburger,Sub,LG,,1,5.1
+45,Cheeseburger,Sub,SM,,1,7.45
+46,Fried Chicken,Sub,LG,,1,6.95
+47,Fried Chicken,Sub,SM,,1,8.5
+48,Veggie,Sub,LG,,1,6.95
+49,Veggie,Sub,LG,,1,8.5
+50,Baked Ziti w/Mozarella,Pasta,NA,,1,6.5
+51,Baked Ziti w/Meatballs,Pasta,NA,,1,8.75
+52,Baked Ziti w/Chicken,Pasta,NA,,1,9.75
+53,Garden Salad,Salad,NA,,1,6.25
+54,Greek Salad,Salad,NA,,1,8.25
+55,Antipasto,Salad,NA,,1,8.25
+56,Salad w/Tuna,Salad,NA,,1,8.25
+57,Garden Salad,Dinner Platter,SM,,1,35
+58,Garden Salad,Dinner Platter,LG,,1,60
+59,Greek Salad,Dinner Platter,SM,,1,45
+60,Greek Salad,Dinner Platter,LG,,1,70
+61,Antipasto,Dinner Platter,SM,,1,45
+62,Antipasto,Dinner Platter,LG,,1,70
+63,Baked Ziti,Dinner Platter,SM,,1,35
+64,Baked Ziti,Dinner Platter,LG,,1,60
+65,Meatball Parm,Dinner Platter,SM,,1,45
+66,Meatball Parm,Dinner Platter,LG,,1,70
+67,Chicken Parm,Dinner Platter,SM,,1,45
+68,Chicken Parm,Dinner Platter,LG,,,80
