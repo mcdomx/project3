@@ -58,14 +58,19 @@ def main():
         delete_table_data("orders_menu_items", db)
         load_table("menu_items.csv", "orders_menu_items", db, 7)
 
-
-
     # pizza_toppings table
     print("ERASE & RELOAD 'pizza_toppings' table? (Y/N): ", end="")
     response=get_Y_or_N()
     if response is 'Y':
         delete_table_data("orders_pizza_toppings", db)
         load_table("pizza_toppings.csv", "orders_pizza_toppings", db, 3)
+
+    print("ERASE 'Order and Order_line' tables? (Y/N): ", end="")
+    response=get_Y_or_N()
+    if response is 'Y':
+        delete_table_data("orders_order", db)
+        delete_table_data("orders_order_line", db)
+
 
 
 def delete_table_data(table, db):

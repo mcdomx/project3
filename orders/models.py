@@ -27,22 +27,22 @@ class Toppings (models.Model):
 class Sub_addons(models.Model):
 
     id = models.AutoField(primary_key = True)
-    add_on = models.CharField(max_length = 64)
+    addon = models.CharField(max_length = 64)
     size = models.ForeignKey(Sizes, on_delete = models.CASCADE)
     available = models.BooleanField(default = True)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
-    def get_price(add_on):
-        return Sub_addons.objects(add_on=add_on).price
+    # def get_price(addon):
+    #     return Sub_addons.objects(addon=addon).price
 
     def as_dict(self):
         rv = {}
-        rv["add_on"] = self.add_on
-        rv["price"] = self.price
+        for a in self:
+            rv[self.addon] = self.price
         return rv
 
     def __str__(self):
-        return f'{self.add_on} ({self.size}) ${self.price}'
+        return f'{self.addon} ({self.size}) ${self.price}'
 
 # menu_items
 class Menu_items(models.Model):
@@ -67,31 +67,39 @@ class Menu_items(models.Model):
             rv += " UNAVAILABLE"
         return rv
 
-    def get_item(item, size, toppings):
-        try:
-            rv = Menu_items.objects.get(item=item, size=size, toppings=toppings)
-        except Menu_items.DoesNotExist:
-            return "Item doesn't exist in menu"
-        except MultipleObjectsReturned:
-            return "More than one such item exists in the menu"
-
-        return rv
-
-    def get_price(self):
-        return self.price
+    # def get_item(item, size, toppings):
+    #     try:
+    #         rv = Menu_items.objects.get(item=item, size=size, toppings=toppings)
+    #     except Menu_items.DoesNotExist:
+    #         return "Item doesn't exist in menu"
+    #     except MultipleObjectsReturned:
+    #         return "More than one such item exists in the menu"
+    #
+    #     return rv
+    #
+    # def get_price(self):
+    #     return self.price
 
     def as_dict(self):
+        # turn addons into a dict
+        avail_addons = self.addons.all()
+        a_dict = {}
+        for a in avail_addons:
+            a_dict[a.addon] = a.price
+
         rv = {}
         rv["category"] = self.category.category
         rv["item"] = self.item
         rv["size"] = self.size.size
+        rv["toppings_opt"] = self.toppings.option
         rv["toppings_desc"] = self.toppings.description
+        rv["addons"] = a_dict
         rv["price"] = self.price
         return rv
 
 
-    def get_varval(self, variable):
-        return self.variable
+    # def get_varval(self, variable):
+    #     return self.variable
 
     # def __str__(self):
     #     if self.size == '':
@@ -117,107 +125,53 @@ class Pizza_toppings(models.Model):
                 rv.append(t.topping)
         return rv
 
+# order
+class Order(models.Model):
+    date = models.DateTimeField(auto_now=True)
+    price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
+    def __str__(self):
+        return f'Order Number:{self.id}   Price:${self.price}'
 
 
 # order line
 class Order_line(models.Model):
-    SIZE_CHOICES = (
-     ('SM', 'small'),
-     ('LG', 'large'),
-     ('NA', 'one size')
-    )
-
-    TOPPINGS_CHOICES = (
-        ('CHEESE', 'cheese'),
-        ('1', '1 topping' ),
-        ('2', '2 toppings' ),
-        ('3', '3 toppings' ),
-        ('SPECIAL', 'special'),
-        ('NA', 'no toppings')
-    )
 
     line_num = models.IntegerField()
+    order = models.ForeignKey(Order, on_delete = models.CASCADE, blank = True, null = True, related_name="lines")
     item = models.ForeignKey(Menu_items, on_delete = models.CASCADE, blank = True, null = True)
-    category = models.ForeignKey(Menu_categories, on_delete = models.CASCADE, blank = True, null = True)
-    size = models.CharField(max_length = 16, choices = SIZE_CHOICES, blank = True, null = True)
-    toppings = models.CharField(max_length = 64, choices = TOPPINGS_CHOICES, blank = True, null = True)
     topping_items = models.ManyToManyField(Pizza_toppings, blank = True)
-    sub_addons = models.ManyToManyField(Sub_addons, blank = True)
+    addons = models.ManyToManyField(Sub_addons, blank = True)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
-    def add_topping(self, topping):
-        self.topping_items.add(topping)
-        update_toppings(self)
+    def create(self, line_num, line, order):
+        size_obj = Sizes.objects.get(size=line['size'])
+        top_obj = Toppings.objects.get(option=line['toppings_opt'])
+        order_obj = Order.objects.get(id=order.id)
 
-    def remove_topping(self, topping):
-        self.topping_items.remove(topping)
-        update_toppings(self)
+        self.line_num = line_num
+        self.order = order
+        self.save()
+        self.item = Menu_items.objects.get(item=line['item'], category_id=line['category'], size=size_obj, toppings=top_obj)
 
-    def update_toppings(self):
-        num_toppings = self.topping_items.objects.count()
-        if num_toppings == 1:
-            self.toppings = "CHEESE"
-        elif num_toppings == 2:
-            self.toppings = "1"
-        elif num_toppings == 3:
-            self.toppings = "2"
-        elif num_toppings == 4:
-            self.toppings = "3"
-        else:
-            num_toppings = "SPECIAL"
+        for t in line['toppings_list']:
+            tobj = Pizza_toppings.objects.get(topping=t)
+            self.topping_items.add(tobj)
+        for s in line['sub_options_list']:
+            print("Adding addon:")
+            print(s)
+            aobj = Sub_addons.objects.get(addon=s, size=self.item.size)
+            self.addons.add(aobj)
 
-    def add_sub_addon(self, sub_addon):
-        self.sub_addons.add(sub_addon)
+        self.price = line['total_line_price']
+        self.save()
 
-    def remove_sub_addon(self, sub_addon):
-        r = self.objects.filter(sub_addon=sub_addon)
-        self.sub_addons.remove(r)
-
-    def change_size(self, size):
-        self.size = size
-
-    # calculate the total price of the line
-    def update_price(self):
-        # self.price = Menu_items.get_item(self.menu_item, self.size, self.toppings).get_price()
-        self.price = Menu_items.objects.get(item=self.item, size=self.size, toppings=self.toppings)
-        for addon in self.sub_addons:
-            self.price += Sub_addons.get_price(addon)
-
-    def get_price(self):
-        return self.price
-
-    def remove_line(self, order):
-        order.lines.remove(self)
-        Order_line.objects.filter(id=self.id).delete()
-        self.delete()
-
-    # def save(self, *args, **kwargs):
-    #     Order_line.update_price(self)
 
     def __str__(self):
-        op_string = f"{self.item} ({self.size}) ${self.price}"
+        op_string = f"{self.line_num}: ({self.item}) ${self.price}"
         return op_string
 
 
-# order
-class Order(models.Model):
-
-    order_num = models.AutoField(primary_key=True)
-    date = models.DateTimeField(auto_now=True)
-    lines = models.ManyToManyField(Order_line)
-    price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-
-    # calculate the total price of the order
-    def update_order_price(self):
-        price = 0
-        for l in self.lines:
-            price += l.price
-
-
-
-# Customer
-# class Customer(models.Model):
 
 
 

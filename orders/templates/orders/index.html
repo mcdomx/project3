@@ -108,16 +108,12 @@
                 </tr>
               </table>
 
-              <div id="delivery_selection" class="form-group">
-                <input type="radio" class="delivery_option" name="delivery_option" value="Pick_up"> Pick-up
-                <input type="radio" class="delivery_option" name="delivery_option" value="Deliver"> Deliver
-              </div>
-
               <div hidden id="order_lines">
-                  .... order lines go here
+                  <!-- .... order lines go here -->
               </div> <!-- END order lines  -->
 
             </div> <!-- END modal body  -->
+
 
             <div class="modal-footer">
               <button id="btn_close_cart" type="button" class="btn btn-secondary" data-dismiss="modal">Close Cart</button>
@@ -129,9 +125,314 @@
       </div> <!-- END VIEW CART MODAL -->
 
 
+      <!-- Order Success Modal -->
+      <div class="modal fade" id="order_success_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Order Success!</h5>
+              <button type="button" class="close" data-dismiss="modal">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Your order will be ready for pickup in 30 minutes.</p>
+
+              <div>Order Number:  <span id="order_number"></span></div>
+              <div>Order Total:   <span id="order_ttl"></span></div>
+
+            </div> <!-- END modal body  -->
+
+
+            <div class="modal-footer">
+              <button id="btn_close_success" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div> <!-- END FOOTER -->
+          </div> <!-- END CONTENT -->
+        </div> <!-- END DIALOG -->
+      </div> <!-- END Order Succes MODAL -->
+
+
 
     {% else %}
       <p>Login to order items.</p>
     {% endif %}
-  </div>
+
+<!-- MENU LISTING -->
+
+<table width="100%" class="foodmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="3"><a name="regular_pizza">Regular Pizza</a></th>
+	      </tr>
+	      <tr>
+		<td></td>
+		<td>Small</td>
+		<td>Large</td>
+	      </tr>	      <tr>
+		<td width="50%">Cheese</td>
+		<td width="25%">12.20</td>
+		<td width="25">17.45</td>
+	      </tr>	      <tr>
+		<td width="50%">1 topping</td>
+		<td width="25%">13.20</td>
+		<td width="25">19.45</td>
+	      </tr>	      <tr>
+		<td width="50%">2 toppings</td>
+		<td width="25%">14.70</td>
+		<td width="25">21.45</td>
+	      </tr>	      <tr>
+		<td width="50%">3 toppings</td>
+		<td width="25%">15.70</td>
+		<td width="25">23.45</td>
+	      </tr>	      <tr>
+		<td width="50%">Special</td>
+		<td width="25%">17.25</td>
+		<td width="25">25.45</td>
+	      </tr>	    </tbody>
+	  </table>
+
+    <table width="100%" class="foodmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="3"><a name="sicilian_pizza">Sicilian Pizza</a></th>
+	      </tr>
+	      <tr>
+		<td></td>
+		<td>Small</td>
+		<td>Large</td>
+	      </tr>	      <tr>
+		<td width="50%">Cheese</td>
+		<td width="25%">23.45</td>
+		<td width="25">37.70</td>
+	      </tr>	      <tr>
+		<td width="50%">1 item</td>
+		<td width="25%">25.45</td>
+		<td width="25">39.70</td>
+	      </tr>	      <tr>
+		<td width="50%">2 items</td>
+		<td width="25%">27.45</td>
+		<td width="25">41.70</td>
+	      </tr>	      <tr>
+		<td width="50%">3 items</td>
+		<td width="25%">28.45</td>
+		<td width="25">43.70</td>
+	      </tr>	      <tr>
+		<td width="50%">Special</td>
+		<td width="25%">29.45</td>
+		<td width="25">44.70</td>
+	      </tr>	    </tbody>
+	  </table>
+
+    <table width="100%" class="toppingmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="2"><a name="toppings">Toppings</a></th>
+	      </tr>	      <tr>
+		<td width="50%">Pepperoni</td>
+	      </tr>	      <tr>
+		<td width="50%">Sausage</td>
+                     </tr>	      <tr>
+		<td width="50%">Mushrooms</td>
+                     </tr>	      <tr>
+		<td width="50%">Onions</td>
+	      </tr>	      <tr>
+		<td width="50%">Ham</td>
+	      </tr>	      <tr>
+		<td width="50%">Canadian Bacon</td>
+	      </tr>	      <tr>
+		<td width="50%">Pineapple</td>
+	      </tr>	      <tr>
+		<td width="50%">Eggplant</td>
+	      </tr>	      <tr>
+		<td width="50%">Tomato &amp; Basil</td>
+	      </tr>	      <tr>
+		<td width="50%">Green Peppers</td>
+	      </tr>	      <tr>
+		<td width="50%">Hamburger</td>
+	      </tr>	      <tr>
+		<td width="50%">Spinach</td>
+	      </tr>	      <tr>
+		<td width="50%">Artichoke</td>
+                     </tr>	      <tr>
+		<td width="50%">Buffalo Chicken</td>
+                      </tr>	      <tr>
+		<td width="50%">Barbecue Chicken</td>
+	      </tr>	      <tr>
+		<td width="50%">Anchovies</td>
+	      </tr>	      <tr>
+		<td width="50%">Black Olives</td>
+	      </tr>	      <tr>
+		<td width="50%">Fresh Garlic</td>
+	      </tr>	      <tr>
+		<td width="50%">Zucchini</td>
+	      </tr>	    </tbody>
+	  </table><
+
+    <table width="100%" class="foodmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="3"><a name="subs">Subs</a></th>
+	      </tr>
+	      <tr>
+		<td></td>
+		<td>Small</td>
+		<td>Large</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Cheese</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Italian</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Ham + Cheese</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Meatball</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Tuna</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Turkey</td>
+		<td width="25%">7.50</td>
+		<td width="25">8.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Chicken Parmigiana</td>
+		<td width="25%">7.50</td>
+		<td width="25">8.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Eggplant Parmigiana</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Steak</td>
+		<td width="25%">6.50</td>
+		<td width="25">7.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Steak + Cheese</td>
+		<td width="25%">6.95</td>
+		<td width="25">8.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">+ Mushrooms</td>
+		<td width="25%">+0.50</td>
+		<td width="25">+0.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">+ Green Peppers</td>
+		<td width="25%">+0.50</td>
+		<td width="25">+0.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">+ Onions</td>
+		<td width="25%">+0.50</td>
+		<td width="25">+0.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Sausage, Peppers & Onions</td>
+		<td width="25%"></td>
+		<td width="25">8.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Hamburger</td>
+		<td width="25%">4.60</td>
+		<td width="25">6.95</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Cheeseburger</td>
+		<td width="25%">5.10</td>
+		<td width="25">7.45</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Fried Chicken</td>
+		<td width="25%">6.95</td>
+		<td width="25">8.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Veggie</td>
+		<td width="25%">6.95</td>
+		<td width="25">8.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Extra Cheese on any sub</td>
+		<td width="25%">+0.50</td>
+		<td width="25">+0.50</td>
+	      </tr>	    </tbody>
+	  </table><
+
+    <table width="100%" class="foodmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="3"><a name="pasta">Pasta</a></th>
+	      </tr>
+	      <tr>
+		<td></td>
+		<td> </td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Baked Ziti w/Mozzarella</td>
+		<td width="25%">6.50</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Baked Ziti w/Meatballs</td>
+		<td width="25%">8.75</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Baked Ziti w/Chicken</td>
+		<td width="25%">9.75</td>
+	      </tr>	    </tbody>
+	  </table>
+
+    <table width="100%" class="foodmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="3"><a name="salad">Salads</a></th>
+	      </tr>
+	      <tr>
+		<td></td>
+		<td></td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Garden Salad</td>
+		<td width="25%">6.25</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Greek Salad</td>
+		<td width="25%">8.25</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Antipasto</td>
+		<td width="25%">8.25</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Salad w/Tuna</td>
+		<td width="25%">8.25</td>
+	      </tr>	    </tbody>
+	  </table>
+
+    <table width="100%" class="foodmenu">
+	    <tbody>
+	      <tr>
+		<th colspan="3"><a name="dinner">Dinner Platters</a></th>
+	      </tr>
+	      <tr>
+		<td></td>
+		<td></td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Garden Salad</td>
+		<td width="25%">Small  $35.00  Large  $60.00</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Greek Salad</td>
+		<td width="25%">Small $45.00  Large  $70.00</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Antipasto</td>
+		<td width="25%">Small $45.00 Large $70.00</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Baked Ziti</td>
+		<td width="25%">Small $35.00 Large $60.00</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Meatball Parm</td>
+		<td width="25%">Small $45.00 Large $70.00</td>
+	      </tr>	      <tr>
+		<td style="text-align: left;" width="50%">Chicken Parm</td>
+		<td width="25%">Small $45.00 Large $80.00</td>
+	      </tr>	    </tbody>
+	  </table>
+
+
+
+<!-- END MENU LISTING -->
+
+
+
+  </div> <!-- end main container -->
 {% endblock %}

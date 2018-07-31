@@ -2,13 +2,14 @@
 // #############  CLASSES  #############
 
 class Order_line {
-  constructor (category, item, size, item_price, toppings_desc, toppings_list, sub_options_list, ttl_price) {
+  constructor (category, item, size, item_price, toppings_opt, toppings_desc, toppings_list, sub_options_list, ttl_price) {
     //TODO: make these all null
     this.line_id = (new Date).getTime();
     this.category = category;
     this.item = item;
     this.item_price = item_price;
     this.size = size;
+    this.toppings_opt = toppings_opt;
     this.toppings_desc = toppings_desc;
     this.toppings_list = toppings_list;
     this.sub_options_list = [];
@@ -17,8 +18,6 @@ class Order_line {
 
 } //end CLASS ORDER_LINE
 
-Order_line.prototype.publicMethod = function () {
-}
 
 class Cart {
   constructor () {
@@ -59,6 +58,7 @@ class Cart {
     return this.order_lines.length;
   }
 
+  //TODO: i think this can be deleted - doesn't appear to be used 
   remove (line_id) {
     for (line in this.order_lines)
       if (this.order_lines[line].line_id == line_id){
@@ -69,12 +69,18 @@ class Cart {
   }
 
   clear_cart () {
-    for (l in this.order_lines){
-      this.order_lines.remove(l);
+    //remove items from cart
+    for (line in this.order_lines){
+      this.order_lines.splice(line, 1);
     }
     this.order_total = 0;
+
+    //clear the shopping cart display
+    clear_cart_table()
+
     //update number of cart items in header
     document.getElementById('num_cartitems').innerHTML = 0;
+
   }
 } // end CLASS CART
 
@@ -106,6 +112,13 @@ function setup_order_modal () {
   document.getElementById('btn_place_order').onclick = place_order;
   document.getElementById('btn_delete_cart').onclick = cart.clear_cart();
 
+
+  document.getElementById('btn_close_success').onclick = () => {
+    s_modal = document.getElementById('order_success_modal');
+    s_modal.style.display="none";
+  }
+
+
   //TODO: make sure this btn is only enabled when there is a full item to order
 
   document.getElementById('cancel_modal').onclick = () => {
@@ -116,24 +129,24 @@ function setup_order_modal () {
 
 
 function place_order() {
-  submit_order_to_Server();
-  cart.clear_cart();
-}
+  submit_order_to_server();
+
+} // end place_order()
 
 // send current cart to server
 function submit_order_to_server() {
-  //initialize new request
+
   const place_order = new XMLHttpRequest();
-
-
-  get_menu_items.open('POST', '/place_order');
-  get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+  place_order.open('POST', '/place_order');
+  place_order.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
 
   //when request is completed
-  get_menu_items.onload = () => {
-    //extract JSON data from request
-    const response = JSON.parse(place_order.responseText)
-    //TODO: confirm order and clear data for new order
+  place_order.onload = () => {
+
+    const message = JSON .parse(place_order.responseText)
+    cart.clear_cart();
+    display_order_success_modal(message);
+
   } //end onload
 
   // Add data to send with request
@@ -146,6 +159,20 @@ function submit_order_to_server() {
 
 
 } // end place_order
+
+function display_order_success_modal(message) {
+  console.log(message)
+  o_number = document.getElementById('order_number')
+  o_number.innerHTML = message["order_number"];
+
+  o_total = document.getElementById('order_ttl')
+  ttl = Number(message["order_total"]).toFixed(2)
+  o_total.innerHTML = `$${ttl}`;
+
+
+  $("#order_success_modal").modal();
+}
+
 
 // get selections from modal --  create order line -- add line to cart
 function add_to_cart() {
@@ -180,13 +207,6 @@ function draw_modal(modal_function) {
       const sel_toppings_list = get_selected_pizza_toppings();
       const sel_subOptions = get_selected_subOptions();
 
-      console.log("Selections from web interface:");
-      console.log(sel_item);
-      console.log(sel_cat);
-      console.log(sel_size);
-      console.log(sel_toppings_list);
-      console.log(sel_subOptions);
-
 
       get_menu_items.open('POST', '/get_menu_items');
       get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
@@ -195,8 +215,6 @@ function draw_modal(modal_function) {
       get_menu_items.onload = () => {
         //extract JSON data from request
         const response = JSON.parse(get_menu_items.responseText)
-        console.log("Response from server:");
-        console.log(response);
         modal_function(response);
       } //end onload
 
@@ -216,21 +234,21 @@ function draw_modal(modal_function) {
 
 
 // starts modal from scratch - unless pizza type is the only thing that changed
-function initial_modal(items) {
+function initial_modal(item) {
 
   document.querySelector('#size_selection').hidden = true;
   document.querySelector('#toppings_group').hidden = true;
   document.querySelector('#sub_options').hidden = true;
 
   // If item has size option, show size
-  if (items[0].size != 'NA') {
+  if (item.size != 'NA') {
     document.querySelector('#size_selection').hidden = false;
   } else {  //otherwise, clear the size selection and hide it
     // clear_size();
   }
 
   // if item is a Pizza, show the toppings selection
-  if (items[0].category == 'Pizza' ) {
+  if (item.category == 'Pizza' ) {
     if (!toppings_list_populated) { load_pizza_toppings() }
     document.querySelector('#toppings_group').hidden = false;
   } else { // otherwise, clear the toppings and hide them
@@ -238,82 +256,55 @@ function initial_modal(items) {
   }
 
   // if item is a Sub, show extra cheese option
-  if (items[0].category == 'Sub' ) {
+  if (item.category == 'Sub' ) {
     clear_sub_options();
-    load_sub_options();
+    load_sub_options(item);
     document.querySelector('#size_selection').hidden = false;
     document.querySelector('#sub_options').hidden = false;
   } else { // otherwise, clear the toppings and hide them
     clear_sub_options();
   }
 
-  if (items[0].category == 'Dinner Platter') {
+  if (item.category == 'Dinner Platter') {
     document.querySelector('#size_selection').hidden = false;
   }
 
-  // if the items count is 1, update the line summary with price
-  if ((items.length) == 1) {
-    update_line_summary(items);
-  }
+    update_line_summary(item);
 
 } // end display_modal_options()
 
 
+function load_sub_options(item) {
 
-function load_sub_options() {
-  //initialize new request
-  const get_sub_options = new XMLHttpRequest();
-  const sel_item = get_selected_menu_item().item;
-  const sel_cat = get_selected_menu_item().category;
-  const sel_size = get_selected_size();
+  addons = item.addons;
 
-  get_sub_options.open('POST', '/get_sub_options');
-  get_sub_options.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+  // loop through reponse items and add them to the dropdown
+  for (a in addons){
+    const check_box = document.createElement('input');
+    check_box.type = "checkbox"
+    check_box.name = "sub_option";
+    check_box.value = a;
 
-  //when request is completed
-  get_sub_options.onload = () => {
+    var data = document.createAttribute("data-addon_price");
+    data.value = addons[a];
+    check_box.setAttributeNode(data);
 
-    //extract JSON data from request
-    const response = JSON.parse(get_sub_options.responseText);
+    check_box.onchange = () => {update_modal()};
 
-    // loop through reponse items and add them to the dropdown
-    for (i in response){
-      const check_box = document.createElement('input');
-      check_box.type = "checkbox"
-      check_box.name = "sub_option";
-      check_box.value = response[i].add_on;
+    const cb_text = document.createElement('span');
+    cb_text.innerHTML = `${a} (\$${addons[a]})`;
 
-      var data = document.createAttribute("data-addon_price");
-      data.value = response[i].price;
-      check_box.setAttributeNode(data);
+    const br = document.createElement('br');
 
-      check_box.onchange = () => {update_modal()};
-
-      const cb_text = document.createElement('span');
-      cb_text.innerHTML = `${response[i].add_on} (\$${response[i].price})`;
-
-      const br = document.createElement('br');
-
-      sub_options = document.getElementById("sub_options");
-      sub_options.appendChild(check_box);
-      sub_options.appendChild( document.createTextNode( '\u00A0' ) );
-      sub_options.appendChild(cb_text);
-      sub_options.appendChild(br);
-
-    }; // end for i in response loop
-
-    } // end onload
-
-    data = new FormData();
-    data.append('sel_item', sel_item);
-    data.append('sel_size', sel_size);
-    data.append('sel_cat', sel_cat);
-
-    // Send request
-    get_sub_options.send(data);
-    return false; // avoid sending the form and creating an HTTP POST request
+    sub_options = document.getElementById("sub_options");
+    sub_options.appendChild(check_box);
+    sub_options.appendChild( document.createTextNode( '\u00A0' ) );
+    sub_options.appendChild(cb_text);
+    sub_options.appendChild(br);
+  }; // end for i in response loop
 
 } // end load_sub_options
+
 
 
 
@@ -432,14 +423,11 @@ function get_selected_subOptions() {
 
 
 // update the menu item selection and price
-// only called when a single menu item was resolved by server
-function update_line_summary(item_list) {
+function update_line_summary(item) {
 
-  item = item_list[0];
   s_line = document.getElementById('item_display');
 
   //TODO: consider first updating the order line and then displaying results.  Wait till you have the order line working to do this.
-
   if (item.category == "Pizza") {
     s_line.innerHTML = `${item.item} (${item.size}) // ${item.toppings_desc} // Price: ${item.price}`;
 
@@ -481,15 +469,17 @@ function update_order_line(item) {
   cur_order_line.item = item.item;
   cur_order_line.item_price = item.price;
   cur_order_line.size = item.size;
+  cur_order_line.toppings_opt = item.toppings_opt;
   cur_order_line.toppings_desc = item.toppings_desc;
   cur_order_line.toppings_list = get_selected_pizza_toppings();
   cur_order_line.total_line_price = Number(item.price);
 
   //build sub-options dictionary --> e.g. {"mushrooms":"0.50", :Green Peppers":"0.50"}
+  cur_order_line.sub_options_list = []
   addons = document.getElementsByName("sub_option");
   for (i=0; i<addons.length; i++) {
     if (addons[i].checked == true) {
-      cur_order_line.sub_options_list[addons[i].value] =  Number(addons[i].dataset.addon_price);
+      cur_order_line.sub_options_list.push(addons[i].value);
       cur_order_line.total_line_price += Number(addons[i].dataset.addon_price);
     }
   }
@@ -539,6 +529,8 @@ function clear_cart_table() {
   while (cart_table.lastChild.className == "order_line") {
     cart_table.removeChild(cart_table.lastChild);
   }
+  order_total = document.getElementById('order_total');
+  order_total.innerHTML = 0;
 } // end clear_cart_table()
 
 // clear sub_options from the DOM

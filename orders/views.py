@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
-from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes, Toppings
+from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes, Toppings, Order, Order_line
 from django.http import JsonResponse
 
 import json
@@ -17,11 +17,6 @@ def index(request):
         'menu_items': menu_items,
     }
     return render(request, "orders/index.html", context)
-
-
-# Use session to store shopping cart?
-# Session data is in the 'reguest' object as request.session
-# You can add something to the session dictionary: request.session['shoppingcart'] = order
 
 
 from django.contrib.auth import login, authenticate
@@ -67,24 +62,12 @@ def get_menu_items(request):
     if str(category) in "Pasta" or str(category) in "Salad":
         sel_size='NA'
 
-    print(f"from form. category: {category}")
-    print(f"from form. sel_item: {item}")
-    print(f"from form. sel_size: {sel_size}")
-    print(f"from form. sel_toppings_list: {sel_toppings_list}")
-    print(f"from form. sel_subOptions: {sel_subOptions}")
     size = Sizes.objects.get(size=sel_size)
     topping = Toppings.objects.get(option=option)
-    menu_items = Menu_items.objects.filter(category=category, item=item, size=size, toppings=topping)
-    for m in menu_items:
-        print(m.price)
-        print(m.size.size)
+    menu_item = Menu_items.objects.get(category=category, item=item, size=size, toppings=topping)
 
-    response = []
-    # make each item in the query result a dictionary object and add to response
-    for obj in menu_items:
-        response.append(obj.as_dict())
-    print (response)
-    return JsonResponse(response, safe=False)
+    return JsonResponse(menu_item.as_dict())
+
 
 
 def get_toppings(request):
@@ -93,29 +76,38 @@ def get_toppings(request):
 
     return JsonResponse(response, safe=False)
 
-def get_sub_options(request):
-
-    sel_item = request.POST.get("sel_item")
-    sel_size = request.POST.get("sel_size")
-    sel_cat = request.POST.get("sel_cat")
-
-    # get the menu_item and see if it offers sub options and extended options
-    item =  Menu_items.objects.get(category=sel_cat, item=sel_item, size=sel_size)
-    print(f"from get sub_options item: {item.addons}")
-    addons = item.addons #available addons for item selected
-
-    # create a list of dictionary items for response
-    response = []
-    for obj in addons:
-        response.append(obj.as_dict())
-
-    return JsonResponse(response, safe=False)
-
 
 def place_order(request):
-    order = request.POST.get("cart");
-    # loop through items and add to a new order
+    order_JSON = request.POST.get("cart");
+    order = json.loads(order_JSON)
 
+    # create new order
+    new_order = Order()
+    new_order.price = order['order_total']
+    new_order.save()
+
+    lines = order['order_lines']
+    line_num = 1;
+    for line in lines:
+        new_line = Order_line()
+        new_line.create(line_num, line, new_order)
+        line_num += 1
+
+    context = {
+        'success': True,
+        'order_number': new_order.id,
+        'order_total': new_order.price
+    }
+
+    return JsonResponse(context)
+
+
+
+
+
+
+
+    # respond with success
 
 
 # notes from class

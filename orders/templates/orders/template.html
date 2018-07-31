@@ -21,21 +21,27 @@
         <div class="col-6"><a href="{% url 'index' %}">Pinocchios</a></div>
         <div class="col-6" align="right">
           {% if user.is_authenticated %}
-            <span>Logged in as: {{ user.first_name }}
-            <button type="button" class="btn btn-success"><a href="{% url 'logout' %}">Logout</a></button>
+            <span>Logged in as: {{ user.first_name }} &nbsp
+            <button type="button" class="btn btn-warning btn-sm"><a href="{% url 'logout' %}">Logout</a></button>
             </span>
           {% else %}
-            <button type="button" class="btn btn-success"><a href="{% url 'login' %}">Login</a></button>
+            <button type="button" class="btn btn-warning btn-sm"><a href="{% url 'login' %}">Login</a></button>
+            <button type="button" class="btn btn-warning btn-sm"><a href="{% url 'register' %}">Register</a></button>
           {% endif %}
         </div>  <!-- end right column -->
       </div> <!-- end row -->
       <div id="cartrow" class="row">
         <div class="col">
           Cart: <span id="num_cartitems">0</span>
+          <span>&nbsp</span>
+          <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#view_cart_modal">
+            View Cart
+          </button>
         </div>
       </div> <!-- end row -->
     </header>
     <!-- end HEADER -->
+
       {% block body %}
       {% endblock %}
 
