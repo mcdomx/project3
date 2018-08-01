@@ -67,19 +67,6 @@ class Menu_items(models.Model):
             rv += " UNAVAILABLE"
         return rv
 
-    # def get_item(item, size, toppings):
-    #     try:
-    #         rv = Menu_items.objects.get(item=item, size=size, toppings=toppings)
-    #     except Menu_items.DoesNotExist:
-    #         return "Item doesn't exist in menu"
-    #     except MultipleObjectsReturned:
-    #         return "More than one such item exists in the menu"
-    #
-    #     return rv
-    #
-    # def get_price(self):
-    #     return self.price
-
     def as_dict(self):
         # turn addons into a dict
         avail_addons = self.addons.all()
@@ -139,14 +126,15 @@ class Order(models.Model):
     status = models.ForeignKey(Order_status, on_delete = models.CASCADE, default="placed")
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
-    def __str__(self):
-        return f'Order Number:{self.id}   Price:${self.price}'
+    # def __str__(self):
+    #     return f'Order Number:{self.id} Price:${self.price}'
 
     def as_dict(self):
         rv = {
+            "id": self.id,
             "date": self.date,
             "customer": self.customer.get_username(),
-            "status": self.status,
+            "status": self.status.status,
             "price": self.price
         }
         return rv

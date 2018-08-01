@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from orders.forms import RegistrationForm
-from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes, Toppings, Order, Order_line
+from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes, Toppings, Order, Order_line, Order_status
 from django.http import JsonResponse
 
 import json
@@ -21,14 +21,23 @@ def index(request):
 
 def order_maint(request):
 
-    orders = Order.objects.exclude(status='complete')
-    rv = []
-    for order in orders:
-        
+    # orders = Order.objects.exclude(status='complete')
+    # statuses = Order_status.objects.all()
+    # rv = []
+    # context = { "orders": Order.objects.exclude(status='complete')}
+    context = {}
+    # orders = Order.objects.exclude(status='complete')
+    # orders_dict = {}
+    # for order in orders:
+    #     orders_dict[order.id] = order.as_dict()
 
-    context = {
+    context["orders"] = Order.objects.exclude(status='complete')
+    context["statuses"] = Order_status.objects.all()
+    # for order in orders:
+    #     orders_dict[order.id] = order.as_dict()
+    #     print(orders_dict[order.id])
+    print(context)
 
-    }
     return render(request, "orders/order_maint.html", context)
 
 

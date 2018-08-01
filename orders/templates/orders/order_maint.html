@@ -1,6 +1,13 @@
 {% extends 'orders/template.html' %}
 
+
 {% block body %}
+  <script>
+    function update_status() {
+      alert("Status updated");
+    }
+  </script>
+
   <div class="container">
     <h2>Order Maintenance</h2>
 
@@ -18,19 +25,26 @@
         <th>Status</th>
       </tr>
       {% for order in orders %}
-        <td></td>
-        <td></td>
-        <td></td>
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.customer }}</td>
+        <td>{{ order.price }}</td>
         <td>
-          <select>
-            <option value="placed">placed</option>
-            <option value="acknowledged">acknowledged</option>
-            <option value="ready">ready</option>
-            <option value="complete">complete</option>
+          <select id={{order_id}} onchange="update_status(this.value)">
+            {% for status in statuses %}
+              <option value={{status}}
+                {% if status == order.status %}selected="selected"{% endif %}>
+                {{status}}
+              </option>
+            {% endfor %}
           </select>
         </td>
+      </tr>
       {% endfor %}
     </table>
 
+
   </div> <!-- end container -->
+
+
 {% endblock %}
