@@ -21,7 +21,6 @@ def index(request):
 
 def order_maint(request):
     context = {
-
     }
     return render(request, "orders/order_maint.html", context)
 
@@ -91,6 +90,7 @@ def place_order(request):
     # create new order
     new_order = Order()
     new_order.price = order['order_total']
+    new_order.customer = request.user
     new_order.save()
 
     lines = order['order_lines']

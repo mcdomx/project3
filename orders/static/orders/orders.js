@@ -58,7 +58,7 @@ class Cart {
     return this.order_lines.length;
   }
 
-  //TODO: i think this can be deleted - doesn't appear to be used 
+  //TODO: i think this can be deleted - doesn't appear to be used
   remove (line_id) {
     for (line in this.order_lines)
       if (this.order_lines[line].line_id == line_id){

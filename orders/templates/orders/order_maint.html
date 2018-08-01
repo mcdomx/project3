@@ -4,5 +4,33 @@
   <div class="container">
     <h2>Order Maintenance</h2>
 
+    <a href={% url 'index' %}>
+      <button type="button" class="btn btn-primary">
+          Home
+      </button>
+    </a>
+
+    <table id="status_table" style="width:100%">
+      <tr>
+        <th>Order</th>
+        <th>Customer</th>
+        <th>Price</th>
+        <th>Status</th>
+      </tr>
+      {% for order in orders %}
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <select>
+            <option value="placed">placed</option>
+            <option value="acknowledged">acknowledged</option>
+            <option value="ready">ready</option>
+            <option value="complete">complete</option>
+          </select>
+        </td>
+      {% endfor %}
+    </table>
+
   </div> <!-- end container -->
 {% endblock %}

@@ -71,6 +71,11 @@ def main():
         delete_table_data("orders_order", db)
         delete_table_data("orders_order_line", db)
 
+    print("ERASE 'Order_status' table? (Y/N): ", end="")
+    response=get_Y_or_N()
+    if response is 'Y':
+        delete_table_data("orders_order_status", db)
+
 
 
 def delete_table_data(table, db):

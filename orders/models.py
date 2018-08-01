@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 
 # menu_categories
 class Menu_categories(models.Model):
@@ -127,7 +127,7 @@ class Pizza_toppings(models.Model):
 
 #order status'
 class Order_status(models.Model):
-    status = models.CharField(max_length = 64, blank = False)
+    status = models.CharField(primary_key=True, max_length = 64, blank = False)
 
     def __str__(self):
         return f'{self.status}'
@@ -135,11 +135,22 @@ class Order_status(models.Model):
 # order
 class Order(models.Model):
     date = models.DateTimeField(auto_now=True)
-    status = models.ForeignKey(Order_status, on_delete = models.CASCADE)
+    customer = models.ForeignKey(User, on_delete = models.CASCADE, blank=True, null=True)
+    status = models.ForeignKey(Order_status, on_delete = models.CASCADE, default="placed")
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     def __str__(self):
         return f'Order Number:{self.id}   Price:${self.price}'
+
+    def as_dict(self):
+        rv = {
+            "date": self.date,
+            "customer": self.customer.get_username(),
+            "status": self.status,
+            "price": self.price
+        }
+        return rv
+
 
 
 # order line
