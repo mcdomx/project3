@@ -20,7 +20,14 @@ def index(request):
 
 
 def order_maint(request):
+
+    orders = Order.objects.exclude(status='complete')
+    rv = []
+    for order in orders:
+        
+
     context = {
+
     }
     return render(request, "orders/order_maint.html", context)
 
