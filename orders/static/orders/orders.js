@@ -1,8 +1,9 @@
+// Javascript for the index page
 
 // #############  CLASSES  #############
 
 class Order_line {
-  constructor (category, item, size, item_price, toppings_opt, toppings_desc, toppings_list, sub_options_list, ttl_price) {
+  constructor (line_id, category, item, item_price, size, toppings_opt, toppings_desc, toppings_list, sub_options_list, ttl_price) {
     //TODO: make these all null
     this.line_id = (new Date).getTime();
     this.category = category;
@@ -15,7 +16,6 @@ class Order_line {
     this.sub_options_list = [];
     this.total_line_price = ttl_price;
   } //  end constructor
-
 } //end CLASS ORDER_LINE
 
 
@@ -25,80 +25,82 @@ class Cart {
     this.order_total = 0;
   }
 
-  //create a blank new line
-  new_line () {
-    this.order_lines.push(new Order_line());
-  }
-
-  recalc_total () {
-    this.order_total = 0;
-    for (i in this.order_lines) {
-      this.order_total += this.get_line(i).total_line_price;
-    }
-    //update number of cart items in header
-    document.getElementById('num_cartitems').innerHTML = this.num_items();
-
-  } // end recalc_total()
-
-  //update total of line
-  add_cur_line () {
-    this.recalc_total();
-    line_in_process = false;
-  }
-
-  cur_line () {
-    return this.order_lines[ cart.order_lines.length - 1 ];
-  }
-
-  get_line (line_num) {
-    return this.order_lines[line_num];
-  }
-
-  num_items () {
-    return this.order_lines.length;
-  }
-
-  //TODO: i think this can be deleted - doesn't appear to be used
-  remove (line_id) {
-    for (line in this.order_lines)
-      if (this.order_lines[line].line_id == line_id){
-        this.order_lines.splice(line,1);
-        this.recalc_total();
-        return;
-      }
-  }
-
-  clear_cart () {
-    //remove items from cart
-    for (line in this.order_lines){
-      this.order_lines.splice(line, 1);
-    }
-    this.order_total = 0;
-
-    //clear the shopping cart display
-    clear_cart_table()
-
-    //update number of cart items in header
-    document.getElementById('num_cartitems').innerHTML = 0;
-
-  }
 } // end CLASS CART
 
 // #############  END CLASSES  #############
 
-
-// #############  GLOBAL VARIABLES  #############
+// #############  CART FUNCTIONS  #############
 
 toppings_list_populated = false;
-cart = new Cart();
 line_in_process = false;
+order_in_process = false;
 
-// #############  END GLOBAL VARIABLES  #############
+// load existing cart
+if ( localStorage.getItem('stored_cart') ) {
+  load_cart();
+} else {
+  localStorage.setItem('stored_cart', JSON.stringify(new Cart()));
+}
+
+function get_cart() {
+  return JSON.parse(localStorage.getItem('stored_cart'));
+}
+
+function cart_new_line(cart) {
+  cart.order_lines.push(new Order_line());
+}
+
+function cart_cur_line(cart) {
+  return cart.order_lines[ cart.order_lines.length - 1 ];
+}
+
+function cart_get_line(line, cart) {
+  return cart.order_lines[line];
+}
+
+function set_cart(cart) {
+  localStorage.setItem('stored_cart', JSON.stringify(cart));
+}
+
+function cart_remove_line (line_id, cart) {
+  for (line in cart.order_lines) {
+    if (cart.order_lines[line].line_id == line_id){
+      cart.order_lines.splice(line,1);
+      cart_recalc_total(cart);
+      set_cart(cart);
+    }
+    clear_cart_table();
+    refresh_cart_table();
+  }
+} // end remove()
+
+function clear_cart() {
+  localStorage.setItem('stored_cart', JSON.stringify(new Cart()));
+  clear_cart_table(); //clear the shopping cart display
+
+  //update number of cart items in header
+  document.getElementById('num_cartitems').innerHTML = "0 items";
+}
+
+function cart_recalc_total (cart) {
+  cart.order_total = 0;
+  for (var i in cart.order_lines) {
+    cart.order_total += cart_get_line(i, cart).total_line_price;
+  }
+  //update number of cart items in header
+  document.getElementById('num_cartitems').innerHTML = cart.order_lines.length;
+  if (cart.order_lines.length == 0 ) {
+    document.getElementById("cartinfo").hidden = true;
+  }
+
+} // end recalc_total()
+
+// #############  END CART FUNCTIONS  #############
 
 
 // ########################  begin DOMContentLoaded ########################
-document.addEventListener('DOMContentLoaded', () => {
-
+document.addEventListener('DOMContentLoaded', (evevnt) => {
+  // wait till page loads before setting up javascript elements
   setup_order_modal();
 
 });
@@ -108,60 +110,47 @@ function setup_order_modal () {
 
   document.getElementById('menu_item_selection').onchange = refresh_modal;
   document.getElementById('size_selection').onchange = update_modal;
+
   document.getElementById('btn_add_to_cart').onclick = add_to_cart;
   document.getElementById('btn_place_order').onclick = place_order;
-  document.getElementById('btn_delete_cart').onclick = cart.clear_cart();
-
 
   document.getElementById('btn_close_success').onclick = () => {
     s_modal = document.getElementById('order_success_modal');
     s_modal.style.display="none";
   }
 
-
-  //TODO: make sure this btn is only enabled when there is a full item to order
-
-  document.getElementById('cancel_modal').onclick = () => {
-    clear_modal();
-  }
+  document.getElementById('cancel_modal').onclick = () => {clear_modal();}
 
 } // end setup_order_modal()
 
 
-function place_order() {
-  submit_order_to_server();
-
-} // end place_order()
-
 // send current cart to server
-function submit_order_to_server() {
+function place_order() {
 
   const place_order = new XMLHttpRequest();
   place_order.open('POST', '/place_order');
   place_order.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
 
-  //when request is completed
   place_order.onload = () => {
-
     const message = JSON .parse(place_order.responseText)
-    cart.clear_cart();
+    // after order is placed, clear the card and display succes modal
+    clear_cart();
     display_order_success_modal(message);
-
+    document.getElementById("cartinfo").hidden = true;
+    order_in_process=false;
   } //end onload
 
   // Add data to send with request
   const data = new FormData();
-
   data.append('cart', JSON.stringify(cart));
-
   place_order.send(data); // Send request
   return false; // avoid sending the form
 
-
 } // end place_order
 
+
+// helpder function for place_order() -- populate success modal and display it
 function display_order_success_modal(message) {
-  console.log(message)
   o_number = document.getElementById('order_number')
   o_number.innerHTML = message["order_number"];
 
@@ -169,71 +158,84 @@ function display_order_success_modal(message) {
   ttl = Number(message["order_total"]).toFixed(2)
   o_total.innerHTML = `$${ttl}`;
 
-
   $("#order_success_modal").modal();
 }
 
+function load_cart() {
+  //add cart items to modal and update header line
+  refresh_cart_table();
+  cart_recalc_total(cart);
+} // end load_cart()
 
-// get selections from modal --  create order line -- add line to cart
+// add current line items to cart
 function add_to_cart() {
-  cart.add_cur_line();
+  // cart.add_cur_line();
+  cart = get_cart();
+  cart_recalc_total(cart);
+  set_cart(cart);
   clear_modal();
-  create_cart_table();
+  refresh_cart_table();
+  if (!order_in_process) {
+    order_in_process=true
+    document.getElementById("cartinfo").hidden = false;
+  };
+
+  //put cart in local storage
+  localStorage.setItem('stored_cart', JSON.stringify(cart))
+  line_in_process = false;
+
 } // end add to cart
 
-function refresh_modal() {
-  draw_modal(initial_modal);
-}
+//called to draw the line item modal when a new menu item was selected
+function refresh_modal() {draw_modal(initial_modal);}
 
-function update_modal() {
-  draw_modal(update_line_summary);
-}
+//called to draw the line item modal when a change was made to the line
+//other than selecting a new menu item
+function update_modal() {draw_modal(update_line_summary);}
 
 // gets a menu item from the server based on user selections
-// updates the modal with options based on user selection
-// will also update the price
+// updates the modal based on the 'modal_function' argument
 function draw_modal(modal_function) {
 
-      if (line_in_process == false) {
-        cart.new_line();
-        line_in_process = true;
-      }
+  if (line_in_process == false) {
+    cart = get_cart();
+    cart_new_line(cart);
+    set_cart(cart);
+    line_in_process = true;
+  }
 
-      //initialize new request
-      const get_menu_items = new XMLHttpRequest();
-      const sel_item = get_selected_menu_item().item;
-      const sel_cat = get_selected_menu_item().category;
-      const sel_size = get_selected_size();
-      const sel_toppings_list = get_selected_pizza_toppings();
-      const sel_subOptions = get_selected_subOptions();
+  const get_menu_items = new XMLHttpRequest();
+  const sel_item = get_selected_menu_item().item;
+  const sel_cat = get_selected_menu_item().category;
+  const sel_size = get_selected_size();
+  const sel_toppings_list = get_selected_pizza_toppings();
+  const sel_subOptions = get_selected_subOptions();
 
+  get_menu_items.open('POST', '/get_menu_items');
+  get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
 
-      get_menu_items.open('POST', '/get_menu_items');
-      get_menu_items.setRequestHeader("X-CSRFToken", CSRF_TOKEN);
+  get_menu_items.onload = () => {
+    const response = JSON.parse(get_menu_items.responseText)
+    modal_function(response);
+  } //end onload
 
-      //when request is completed
-      get_menu_items.onload = () => {
-        //extract JSON data from request
-        const response = JSON.parse(get_menu_items.responseText)
-        modal_function(response);
-      } //end onload
+  // Add data to send with request
+  const data = new FormData();
 
-      // Add data to send with request
-      const data = new FormData();
+  data.append('sel_item', sel_item);
+  data.append('sel_cat', sel_cat);
+  data.append('sel_size', sel_size);
+  data.append('sel_toppings_list', sel_toppings_list);
+  data.append('sel_subOptions', sel_subOptions);
 
-      data.append('sel_item', sel_item);
-      data.append('sel_cat', sel_cat);
-      data.append('sel_size', sel_size);
-      data.append('sel_toppings_list', sel_toppings_list);
-      data.append('sel_subOptions', sel_subOptions);
-
-      get_menu_items.send(data); // Send request
-      return false; // avoid sending the form
+  get_menu_items.send(data); // Send request
+  return false; // avoid sending the form
 
 } // end func_get_items()
 
 
 // starts modal from scratch - unless pizza type is the only thing that changed
+// called when a new menu item is selected
 function initial_modal(item) {
 
   document.querySelector('#size_selection').hidden = true;
@@ -243,8 +245,10 @@ function initial_modal(item) {
   // If item has size option, show size
   if (item.size != 'NA') {
     document.querySelector('#size_selection').hidden = false;
-  } else {  //otherwise, clear the size selection and hide it
-    // clear_size();
+    document.getElementById('size_lg').checked = true; //large is default
+  } else {
+    document.getElementById('size_lg').checked = false;
+    document.getElementById('size_sm').checked = false;
   }
 
   // if item is a Pizza, show the toppings selection
@@ -273,7 +277,7 @@ function initial_modal(item) {
 
 } // end display_modal_options()
 
-
+// called when a sub is selected - updates the modal to show addons available
 function load_sub_options(item) {
 
   addons = item.addons;
@@ -306,8 +310,7 @@ function load_sub_options(item) {
 } // end load_sub_options
 
 
-
-
+// called once to load the pizza toppings available
 function load_pizza_toppings() {
   //initialize new request
   const get_toppings = new XMLHttpRequest();
@@ -372,6 +375,7 @@ function load_pizza_toppings() {
 
 } // end load_pizza_toppings()
 
+// returns the selected menu item from the modal window
 function get_selected_menu_item () {
     var i = document.getElementById("menu_item_selection");
     i_text = i.options[i.selectedIndex].text;
@@ -381,7 +385,7 @@ function get_selected_menu_item () {
     return {"category":category, "item":item};
 }
 
-// get the selected size.  return false if neither is selected
+// get the selected size.  return LG if neither is selected
 function get_selected_size() {
   size_radios = document.getElementsByClassName("selected_size")
   num_radios = size_radios.length;
@@ -393,7 +397,7 @@ function get_selected_size() {
   return "LG" //default
 } // end get_selected_size()
 
-
+//returns a list of pizza toppings selected by user
 function get_selected_pizza_toppings() {
     elements = document.getElementsByClassName('selected_pizza_toppings');
     rv = []
@@ -403,13 +407,13 @@ function get_selected_pizza_toppings() {
     return rv;
 } // end get_selected_pizza_toppings
 
-
+//counts number of toppings selected by user
 function count_selected_pizza_toppings() {
   elements = document.getElementsByClassName('selected_pizza_toppings');
   return elements.length;
 } // end count_slected_pizza_toppings()
 
-
+//returns a list of addons selected by the user
 function get_selected_subOptions() {
     elements = document.getElementsByName("sub_option");
     rv = [];
@@ -422,12 +426,11 @@ function get_selected_subOptions() {
 } // end get_selected_subOptions()
 
 
-// update the menu item selection and price
+// update the modals line item summary
 function update_line_summary(item) {
 
   s_line = document.getElementById('item_display');
 
-  //TODO: consider first updating the order line and then displaying results.  Wait till you have the order line working to do this.
   if (item.category == "Pizza") {
     s_line.innerHTML = `${item.item} (${item.size}) // ${item.toppings_desc} // Price: ${item.price}`;
 
@@ -460,10 +463,10 @@ function update_line_summary(item) {
 
 } // update_item_display()
 
-
+// updated the carts order line variable with item argument supplied
 function update_order_line(item) {
-
-  cur_order_line = cart.cur_line();
+  cart = get_cart();
+  cur_order_line = cart_cur_line(cart);
 
   cur_order_line.category = item.category;
   cur_order_line.item = item.item;
@@ -483,6 +486,7 @@ function update_order_line(item) {
       cur_order_line.total_line_price += Number(addons[i].dataset.addon_price);
     }
   }
+  set_cart(cart);
 
 } // end update_order_line()
 
@@ -524,6 +528,7 @@ function clear_toppings() {
   }
 } // end clear_toppings()
 
+//clear the HTML table in the cart
 function clear_cart_table() {
   cart_table = document.getElementById('cart_table');
   while (cart_table.lastChild.className == "order_line") {
@@ -541,8 +546,9 @@ function clear_sub_options() {
   }
 } // end clear_toppings()
 
-
-function create_cart_table() {
+// create a table for the cart display with items in the cart
+function refresh_cart_table() {
+  cart = get_cart();
 
   //clear cart table and redraw it
   clear_cart_table();
@@ -550,19 +556,18 @@ function create_cart_table() {
 
   for (line in cart.order_lines) {
     line_num = Number(line) + 1;
-    append_cart_line(line_num, cart.get_line(line), cart_table);
+    append_cart_line(line_num, cart_get_line(line, cart), cart_table, cart);
   }
 
   order_total = document.getElementById('order_total');
   order_total.style.textAlign = "right";
   order_total.innerHTML = `$${cart.order_total.toFixed(2)}`;
+  set_cart(cart);
 
 } // end display_cart_table()
 
-
-
-
-function append_cart_line(num, line, cart_table) {
+// helper function for refresh_cart_table - adds new cart line item
+function append_cart_line(num, line, cart_table, cart) {
 
   row = document.createElement('tr');
   row.className = "order_line";
@@ -585,9 +590,10 @@ function append_cart_line(num, line, cart_table) {
   const remove_but = document.createElement('span');
   remove_but.className = "badge badge-pill badge-danger ml-2";
   remove_but.innerHTML = "&times;";
-  remove_but.onclick = () => {
-    cart.remove(line.line_id);
-    create_cart_table();
+  remove_but.onclick = (it) => {
+    cart = get_cart();
+    line = cart_get_line(num-1, cart);
+    cart_remove_line (line.line_id, cart);
   } // end remove button on click
   line_num.appendChild(remove_but);
 

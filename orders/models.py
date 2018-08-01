@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # menu_categories
 class Menu_categories(models.Model):
     category = models.CharField(primary_key = True, max_length = 64)
@@ -9,12 +10,14 @@ class Menu_categories(models.Model):
     def __str__(self):
         return f'{self.category}'
 
+
 class Sizes (models.Model):
     size = models.CharField(primary_key=True, max_length = 16)
     description = models.CharField(max_length = 64)
 
     def __str__(self):
         return f'{self.size}-{self.description}'
+
 
 class Toppings (models.Model):
     option = models.CharField(primary_key=True, max_length = 16)
@@ -31,9 +34,6 @@ class Sub_addons(models.Model):
     size = models.ForeignKey(Sizes, on_delete = models.CASCADE)
     available = models.BooleanField(default = True)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-
-    # def get_price(addon):
-    #     return Sub_addons.objects(addon=addon).price
 
     def as_dict(self):
         rv = {}
@@ -85,17 +85,6 @@ class Menu_items(models.Model):
         return rv
 
 
-    # def get_varval(self, variable):
-    #     return self.variable
-
-    # def __str__(self):
-    #     if self.size == '':
-    #         return f'{self.category} : {self.item}  {self.get_toppings_display()}'
-    #     else:
-    #         return f'{self.category} : {self.item}  ({self.size})  {self.get_toppings_display()}'
-
-
-
 # toppings
 class Pizza_toppings(models.Model):
     topping = models.CharField(max_length = 64, blank = False)
@@ -111,6 +100,7 @@ class Pizza_toppings(models.Model):
             if t.available is True:
                 rv.append(t.topping)
         return rv
+
 
 #order status'
 class Order_status(models.Model):
@@ -140,7 +130,6 @@ class Order(models.Model):
         return rv
 
 
-
 # order line
 class Order_line(models.Model):
 
@@ -165,8 +154,6 @@ class Order_line(models.Model):
             tobj = Pizza_toppings.objects.get(topping=t)
             self.topping_items.add(tobj)
         for s in line['sub_options_list']:
-            print("Adding addon:")
-            print(s)
             aobj = Sub_addons.objects.get(addon=s, size=self.item.size)
             self.addons.add(aobj)
 
@@ -177,30 +164,3 @@ class Order_line(models.Model):
     def __str__(self):
         op_string = f"{self.line_num}: ({self.item}) ${self.price}"
         return op_string
-
-
-
-
-
-# class Airport(models.Model):
-#     code = models.CharField(max_length = 3)
-#     city = models.CharField(max_length = 64)
-#
-#     def __str__(self):
-#         return f"{self.city} ({self.code})"
-#
-# class Flight(models.Model):
-#     origin = models.ForeignKey(Airport, on_delete = models.CASCADE, related_name="departures")
-#     destination = models.ForeignKey(Airport, on_delete = models.CASCADE, related_name="arrivals")
-#     duration = models.IntegerField()
-#
-#     def __str__(self):
-#         return f"{self.id} - {self.origin} to {self.destination}"
-#
-# class Passenger(models.Model):
-#     first = models.CharField(max_length = 64)
-#     last = models.CharField(max_length = 64)
-#     flights = models.ManyToManyField(Flight, blank = True, related_name = "passengers")
-#
-#     def __str__(self):
-#         return f"{self.first} {self.last}"

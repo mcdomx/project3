@@ -6,44 +6,27 @@ from orders.forms import RegistrationForm
 from .models import Menu_items, Pizza_toppings, Sub_addons, Sizes, Toppings, Order, Order_line, Order_status
 from django.http import JsonResponse
 
-import json
-
-# Create your views here.
-def index(request):
-
-    menu_items = Menu_items.objects.values('category','item').distinct()
-
-    context = {
-        'menu_items': menu_items,
-    }
-    return render(request, "orders/index.html", context)
-
-
-def order_maint(request):
-
-    # orders = Order.objects.exclude(status='complete')
-    # statuses = Order_status.objects.all()
-    # rv = []
-    # context = { "orders": Order.objects.exclude(status='complete')}
-    context = {}
-    # orders = Order.objects.exclude(status='complete')
-    # orders_dict = {}
-    # for order in orders:
-    #     orders_dict[order.id] = order.as_dict()
-
-    context["orders"] = Order.objects.exclude(status='complete')
-    context["statuses"] = Order_status.objects.all()
-    # for order in orders:
-    #     orders_dict[order.id] = order.as_dict()
-    #     print(orders_dict[order.id])
-    print(context)
-
-    return render(request, "orders/order_maint.html", context)
-
-
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 
+import json
+
+# render main landing page of site
+def index(request):
+    menu_items = Menu_items.objects.values('category','item').distinct()
+    context = {'menu_items': menu_items,}
+    return render(request, "orders/index.html", context)
+
+
+# render order maintenance page with list of orders that are not complete
+def order_maint(request):
+    context = {}
+    context["orders"] = Order.objects.exclude(status='complete')
+    context["statuses"] = Order_status.objects.all()
+    return render(request, "orders/order_maint.html", context)
+
+
+# render the register page with secure registration form
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -91,14 +74,14 @@ def get_menu_items(request):
     return JsonResponse(menu_item.as_dict())
 
 
-
+# get the avaialble toppings list
 def get_toppings(request):
     p_toppings = Pizza_toppings.objects.filter(available=True)
     response = Pizza_toppings.as_list()
-
     return JsonResponse(response, safe=False)
 
 
+# place new order and save to databse
 def place_order(request):
     order_JSON = request.POST.get("cart");
     order = json.loads(order_JSON)
@@ -122,13 +105,22 @@ def place_order(request):
         'order_total': new_order.price
     }
 
+    request.session['cart'] = None;
+
     return JsonResponse(context)
 
 
+# change the status of order_num to new_status
+def change_status(request):
+    order_num = request.POST.get("order_num");
+    new_status = request.POST.get("new_status");
 
-    # respond with success
+    order = Order.objects.get(id=order_num)
+    order.status = Order_status.objects.get(status=new_status)
+    order.save()
 
+    context = {
+        'order': order.as_dict(),
+    }
 
-# notes from class
-# from django.http import JsonResponse
-# response = JsonResponse(someDictinoary)  # use safe=False to return list
+    return JsonResponse(context)

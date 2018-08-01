@@ -3,9 +3,7 @@
 
 {% block body %}
   <script>
-    function update_status() {
-      alert("Status updated");
-    }
+
   </script>
 
   <div class="container">
@@ -30,9 +28,9 @@
         <td>{{ order.customer }}</td>
         <td>{{ order.price }}</td>
         <td>
-          <select id={{order_id}} onchange="update_status(this.value)">
+          <select onchange="update_status(this.value)">
             {% for status in statuses %}
-              <option value={{status}}
+              <option value={{order.id}}:{{status}}
                 {% if status == order.status %}selected="selected"{% endif %}>
                 {{status}}
               </option>
@@ -45,6 +43,7 @@
 
 
   </div> <!-- end container -->
+  <script src="./static/orders/order_maint.js"></script>
 
 
 {% endblock %}
